@@ -1,0 +1,2983 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2f6fed">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="电子书">
+<link rel="manifest" id="appManifest">
+<link rel="apple-touch-icon" id="appleIcon">
+<title>电子书编辑器</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--line:#e4e7eb;--text:#1f2430;--sub:#6b7280;--brand:#2f6fed;--brand-soft:#e8f0ff;--ok:#12a06a;--danger:#e5484d;--warn:#f5a623;--shadow:0 2px 10px rgba(20,30,60,.06);--topbar-h:54px;--tabbar-h:46px}
+*{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;max-width:100vw;overflow-x:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;height:100vh;height:100dvh;overflow:hidden}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;max-width:100%}
+button{cursor:pointer;border:none;background:none}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:#c7ccd6;border-radius:9px}
+.topbar{height:var(--topbar-h);display:flex;align-items:center;gap:8px;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--line);box-shadow:var(--shadow);position:relative;z-index:30}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;margin-right:4px;white-space:nowrap}
+.logo .dot{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,#4a7dff,#2f6fed);display:grid;place-items:center;color:#fff;font-size:13px}
+.title-input{border:none;background:transparent;font-weight:600;font-size:15px;width:200px;outline:none;padding:4px 6px;border-radius:6px}
+.title-input:hover{background:#f2f4f7}.title-input:focus{background:#fff;border:1px solid var(--brand);padding:3px 5px}
+.spacer{flex:1}.save-tag{font-size:12px;color:var(--sub);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.save-tag .pulse{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.btn{height:34px;padding:0 12px;border-radius:8px;background:var(--panel);border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px;transition:.15s;white-space:nowrap;font-weight:500}
+.btn:hover{border-color:#c2cbdb;background:#f8fafc;transform:translateY(-1px)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}.btn.primary:hover{background:#2259d6}
+.btn .ic{font-size:15px;line-height:1}.sep{width:1px;height:24px;background:var(--line);margin:0 4px}
+.btn-accent{height:34px;padding:0 12px;border-radius:8px;background:var(--brand-soft);border:1px solid #c8dbff;color:var(--brand);display:inline-flex;align-items:center;gap:5px;font-weight:600;white-space:nowrap;transition:.15s}
+.btn-accent:hover{background:#d8e6ff;transform:translateY(-1px)}.btn-accent .ic{font-size:16px;line-height:1}
+.layout{display:flex;height:calc(100vh - var(--topbar-h));height:calc(100dvh - var(--topbar-h));position:relative;overflow:hidden}
+.sidebar{width:270px;flex-shrink:0;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.sb-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);gap:8px;flex-shrink:0}
+.sb-head h3{margin:0;font-size:13px;color:var(--sub);font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.sb-tools{display:flex;gap:6px}.icon-btn{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;color:var(--sub);transition:.15s;font-size:16px}
+.icon-btn:hover{background:var(--brand-soft);color:var(--brand)}
+.chapter-list{flex:1;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}
+.chapter{display:flex;align-items:center;gap:7px;padding:9px;border-radius:8px;margin-bottom:2px;cursor:pointer;position:relative;transition:.12s}
+.chapter:hover{background:#f2f4f7}.chapter.active{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.chapter .num{width:20px;height:20px;border-radius:5px;background:#eef1f5;color:var(--sub);font-size:11px;display:grid;place-items:center;flex-shrink:0;font-weight:600}
+.chapter.active .num{background:var(--brand);color:#fff}
+.chapter .ct{font-size:13px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chapter .title-edit{flex:1;font-size:13px;border:1px solid var(--brand);border-radius:5px;padding:2px 6px;outline:none;background:#fff;color:var(--text);min-width:0}
+.chapter .del{opacity:0;color:#c7ccd6;font-size:14px;line-height:1;padding:2px 4px;border-radius:4px;transition:.15s;z-index:2;position:relative}
+.chapter:hover .del,.chapter.active .del{opacity:1}.chapter .del:hover{background:#ffe3e5;color:var(--danger)}
+.chapter.drag-over{outline:2px dashed var(--brand);outline-offset:-2px}
+.empty-chap{padding:26px 16px;text-align:center;color:var(--sub);font-size:13px;line-height:1.7}
+.sb-foot{border-top:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex-shrink:0}
+.meta-block{display:flex;flex-direction:column;gap:5px}.meta-block label{font-size:11px;color:var(--sub);font-weight:600;letter-spacing:.3px}
+.meta-block input{border:1px solid var(--line);border-radius:7px;padding:6px 8px;outline:none;background:#fbfcfe}
+.meta-block input:focus{border-color:var(--brand);background:#fff}
+.tabbar{display:none;height:var(--tabbar-h);background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding:0 8px;align-items:center;gap:6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0}
+.tabbar::-webkit-scrollbar{display:none}
+.tab{height:32px;padding:0 8px 0 6px;border-radius:16px;background:#f2f4f7;color:var(--text);font-size:13px;display:inline-flex;align-items:center;gap:5px;flex-shrink:0;transition:.12s;max-width:200px;cursor:pointer;user-select:none}
+.tab .tnum{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:9px;background:#dde1e8;color:var(--sub);font-size:10px;font-weight:700;flex-shrink:0}
+.tab.active{background:var(--brand);color:#fff;font-weight:600}.tab.active .tnum{background:rgba(255,255,255,.28);color:#fff}
+.tab .tlabel{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:110px}
+.tab .tdel{width:20px;height:20px;border-radius:10px;display:none;place-items:center;font-size:12px;line-height:1;z-index:2;position:relative}
+.tab.active .tdel{display:inline-grid;background:rgba(255,255,255,.22);color:#fff}.tab .tdel:hover{background:rgba(255,255,255,.4)}
+.tab-add{height:32px;padding:0 12px;border-radius:16px;background:var(--brand-soft);color:var(--brand);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px;flex-shrink:0;border:1px dashed #a8c3ff;cursor:pointer}
+.tab-add:active{background:#d8e6ff}.tab-edit-input{height:32px;padding:0 10px;border-radius:16px;border:1px solid var(--brand);background:#fff;font-size:13px;outline:none;width:140px;flex-shrink:0}
+.editor-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);min-width:0}
+.toolbar{height:46px;display:flex;align-items:center;gap:4px;padding:0 10px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap;overflow-y:auto;flex-shrink:0}
+.toolbar .grp{display:flex;align-items:center;gap:2px;padding:0 4px;position:relative}
+.tb-btn{min-width:32px;height:30px;padding:0 6px;border-radius:6px;color:var(--text);display:grid;place-items:center;transition:.12s;font-size:14px;line-height:1}
+.tb-btn:hover{background:#eef2f7}.tb-select{height:30px;border:1px solid var(--line);border-radius:6px;background:#fbfcfe;padding:0 6px;outline:none;cursor:pointer}
+.tb-color{width:26px;height:24px;border:1px solid var(--line);border-radius:5px;padding:0;overflow:hidden;cursor:pointer}
+.fontsize-wrap{position:relative;display:inline-flex}
+.fontsize-btn{height:30px;min-width:52px;padding:0 10px;border-radius:6px;border:1px solid var(--line);background:#fbfcfe;color:var(--text);display:inline-flex;align-items:center;justify-content:space-between;gap:4px;font-size:13px;cursor:pointer}
+.fontsize-btn:hover{background:#eef2f7}.fontsize-btn .caret{font-size:10px;color:var(--sub)}
+.fontsize-pop{position:absolute;top:100%;left:0;margin-top:4px;z-index:150;background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(20,26,40,.2);border:1px solid var(--line);padding:6px;min-width:140px;display:none;flex-direction:column;gap:2px}
+.fontsize-pop.show{display:flex}
+.fontsize-pop button{padding:9px 12px;border-radius:6px;text-align:left;color:var(--text);display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}
+.fontsize-pop button:hover{background:var(--brand-soft);color:var(--brand)}
+.fontsize-pop button .sz{font-size:11px;color:var(--sub)}
+.fontsize-pop button[data-size="12px"]{font-size:12px}
+.fontsize-pop button[data-size="16px"]{font-size:16px}
+.fontsize-pop button[data-size="20px"]{font-size:20px}
+.fontsize-pop button[data-size="26px"]{font-size:26px}
+.editor-scroll{flex:1;overflow-y:auto;padding:26px 0;-webkit-overflow-scrolling:touch}
+.editor{max-width:820px;margin:0 auto;background:#fff;min-height:70vh;padding:48px 60px;box-shadow:0 4px 24px rgba(20,30,60,.07);border-radius:4px;outline:none;font-size:16px;line-height:1.9;contain:content;content-visibility:auto;contain-intrinsic-size:800px 3000px}
+.editor:focus{box-shadow:0 4px 28px rgba(47,111,237,.18)}
+.editor:empty:before{content:attr(data-placeholder);color:#aab2bf;white-space:pre-line;pointer-events:none}
+.editor h1,.editor h2,.editor h3{line-height:1.4}
+.editor blockquote{margin:12px 0;padding:8px 14px;border-left:3px solid var(--brand);background:#f7f9fc;color:#3a4150;border-radius:0 6px 6px 0}
+.editor pre{background:#1f2430;color:#e6e8eb;padding:14px 16px;border-radius:8px;overflow-x:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px}
+.editor code{background:#eef1f5;padding:2px 5px;border-radius:4px;font-size:.9em;font-family:ui-monospace,Menlo,Consolas,monospace}
+.editor pre code{background:none;padding:0;color:inherit}
+.editor a{color:var(--brand);text-decoration:underline;text-decoration-color:rgba(47,111,237,.4);text-underline-offset:2px;cursor:pointer}
+.editor a:hover{text-decoration-color:var(--brand);background:rgba(47,111,237,.06);border-radius:3px}
+.editor img{max-width:100%;border-radius:8px}
+.editor table{border-collapse:collapse;width:100%}.editor td,.editor th{border:1px solid var(--line);padding:6px 10px}.editor th{background:#f4f6f9}
+.wordcount{font-size:11px;color:#9aa3b0}
+.busy-mask{position:fixed;inset:0;background:rgba(20,26,40,.55);z-index:300;display:none;place-items:center;backdrop-filter:blur(3px)}
+.busy-mask.show{display:grid}
+.busy-box{background:#fff;border-radius:14px;padding:22px 26px;box-shadow:0 20px 60px rgba(20,26,40,.25);text-align:center;min-width:220px;max-width:calc(100vw - 32px)}
+.busy-box .sp{width:32px;height:32px;border:3px solid var(--brand-soft);border-top-color:var(--brand);border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.busy-box .msg{font-size:14px;color:var(--text);font-weight:600}
+.busy-box .sub{font-size:12px;color:var(--sub);margin-top:4px}
+.modal-mask{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(20,26,40,.45);z-index:100;display:none;align-items:center;justify-content:center;padding:14px;padding-top:max(14px,env(safe-area-inset-top,0px));padding-bottom:max(14px,env(safe-area-inset-bottom,0px));backdrop-filter:blur(2px);overflow:hidden}
+.modal-mask.show{display:flex}
+.modal{background:#fff;border-radius:14px;width:min(440px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:calc(100vh - 28px);max-height:calc(100dvh - 28px);box-shadow:0 20px 60px rgba(20,26,40,.25);display:flex;flex-direction:column;overflow:hidden;animation:pop .18s ease;position:relative;min-width:0}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-h{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;background:#fff}
+.modal-h > span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.modal-h .mh-actions{display:flex;gap:6px;font-weight:500;font-size:13px;color:var(--sub);flex-shrink:0}
+.modal-h .mh-btn{padding:6px 10px;border-radius:7px;background:#f2f4f7;color:var(--sub);white-space:nowrap}
+.modal-h .mh-btn:hover{background:var(--brand-soft);color:var(--brand)}
+.modal-b{padding:16px 18px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;overflow-x:hidden;flex:1;-webkit-overflow-scrolling:touch;min-height:0;min-width:0}
+.modal-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;background:#fbfcfe;flex-shrink:0;flex-wrap:wrap;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));min-width:0}
+.modal-f .btn{height:40px;padding:0 16px;font-size:15px;flex-shrink:0}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:12px;font-weight:600;color:var(--sub)}
+.field input,.field textarea,.field select{border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none;background:#fbfcfe;font-size:16px;width:100%;max-width:100%}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--brand);background:#fff}
+.field textarea{resize:vertical;min-height:60px;font-family:inherit}
+.toc-list{display:flex;flex-direction:column;gap:4px}
+.toc-row{display:flex;align-items:center;gap:8px;padding:10px;border-radius:8px;cursor:pointer;transition:.12s;border:1px solid transparent}
+.toc-row:hover{background:#f2f4f7}.toc-row.active{background:var(--brand-soft);color:var(--brand);font-weight:600;border-color:#d2e2ff}
+.toc-row .tnum{width:22px;height:22px;border-radius:5px;background:#eef1f5;color:var(--sub);font-size:11px;display:grid;place-items:center;flex-shrink:0;font-weight:700}
+.toc-row.active .tnum{background:var(--brand);color:#fff}
+.toc-row .tlabel{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.toc-row .tlabel-edit{flex:1;font-size:14px;border:1px solid var(--brand);border-radius:6px;padding:4px 8px;outline:none;background:#fff;color:var(--text);min-width:0}
+.toc-row .tbtn{width:30px;height:30px;border-radius:6px;display:grid;place-items:center;color:var(--sub);font-size:14px;flex-shrink:0}
+.toc-row .tbtn:hover{background:#e8ecf2;color:var(--text)}.toc-row .tbtn.danger:hover{background:#ffe3e5;color:var(--danger)}
+.toc-empty{padding:24px;text-align:center;color:var(--sub);font-size:13px}
+.cover-pick{display:flex;gap:8px;flex-wrap:wrap}
+.cover-pick .opt{width:74px;height:96px;border-radius:8px;border:2px solid var(--line);cursor:pointer;position:relative;overflow:hidden;flex-shrink:0}
+.cover-pick .opt.active{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.cover-pick .opt span{position:absolute;left:0;right:0;bottom:0;font-size:10px;color:#fff;padding:3px 5px;background:rgba(0,0,0,.28);text-align:center;line-height:1.2}
+.fmt-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fmt-card{border:1px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;transition:.15s}
+.fmt-card:hover{border-color:#c2cbdb;transform:translateY(-2px);box-shadow:var(--shadow)}
+.fmt-card .ft{font-weight:700;font-size:15px}
+.fmt-card .fd{font-size:12px;color:var(--sub);margin-top:4px;line-height:1.5}
+.img-preview{margin-top:6px;border:1px dashed var(--line);border-radius:8px;padding:8px;display:none;text-align:center;background:#fbfcfe}
+.img-preview.show{display:block}.img-preview img{max-width:100%;max-height:180px;border-radius:6px;display:block;margin:0 auto}
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#1f2430;color:#fff;padding:11px 20px;border-radius:30px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.drop-hint{position:fixed;inset:var(--topbar-h) 0 0 0;background:rgba(47,111,237,.08);z-index:90;display:none;place-items:center;pointer-events:none;border:3px dashed var(--brand);margin:14px;border-radius:16px}
+.drop-hint.show{display:grid}
+.drop-hint div{background:#fff;padding:26px 40px;border-radius:14px;font-size:17px;font-weight:600;box-shadow:0 12px 40px rgba(20,26,40,.2)}
+.ctx-menu{position:fixed;z-index:210;background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(20,26,40,.2);border:1px solid var(--line);padding:4px;min-width:140px;max-width:calc(100vw - 16px);display:none;flex-direction:column}
+.ctx-menu.show{display:flex}
+.ctx-item{padding:10px 12px;border-radius:7px;font-size:14px;display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text)}
+.ctx-item:hover{background:#f2f4f7}.ctx-item.danger{color:var(--danger)}.ctx-item.danger:hover{background:#ffe3e5}
+.ctx-sep{height:1px;background:var(--line);margin:4px 6px}
+.confirm-mask{position:fixed;inset:0;background:rgba(20,26,40,.5);z-index:260;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+.confirm-mask.show{display:flex}
+.confirm-box{background:#fff;border-radius:14px;width:min(360px,100%);box-shadow:0 20px 60px rgba(20,26,40,.3);overflow:hidden;animation:pop .18s ease}
+.confirm-h{padding:16px 18px 6px;font-weight:700;font-size:16px}
+.confirm-b{padding:4px 18px 16px;font-size:14px;line-height:1.7;color:var(--text);word-break:break-word}
+.confirm-b .target{color:var(--brand);font-weight:600}
+.confirm-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;background:#fbfcfe}
+.confirm-f .btn{height:40px;padding:0 16px;font-size:15px}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.danger:hover{background:#c9343a}
+.bm-anchor{display:inline-block;width:0;height:0;overflow:hidden}
+@media (max-width:820px){
+:root{--topbar-h:52px;--tabbar-h:48px}
+.topbar{gap:5px;padding:0 8px}.logo{display:none}
+.title-input{width:auto;flex:1;min-width:0;font-size:15px;padding:6px}
+.save-tag{display:none}.topbar .sep{display:none}
+.topbar .btn{padding:0;width:38px;height:38px;justify-content:center;border-radius:9px}
+.topbar .btn .ic{font-size:17px}.topbar .btn .txt{display:none}
+.topbar .btn.primary{padding:0 12px;width:auto}.topbar .btn.primary .txt{display:inline;font-size:13px}
+.topbar #btnInstall{display:none !important}
+.btn-accent{height:38px;padding:0 10px;font-size:13px}
+.sidebar{display:none}.tabbar{display:flex}
+.layout{display:block;height:calc(100vh - var(--topbar-h) - var(--tabbar-h));height:calc(100dvh - var(--topbar-h) - var(--tabbar-h))}
+.editor-wrap{height:100%}
+.toolbar{height:46px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding:0 6px;scrollbar-width:none}
+.toolbar::-webkit-scrollbar{display:none}
+.toolbar .grp,.tb-btn,.tb-select,.tb-color,.toolbar .sep{flex-shrink:0}
+.editor-scroll{padding:10px 0}
+.editor{padding:20px 16px;min-height:auto;font-size:16px;line-height:1.85;border-radius:0;box-shadow:none;max-width:100%}
+.editor:focus{box-shadow:none}.wordcount{display:none}
+.fmt-grid{grid-template-columns:1fr 1fr;gap:8px}.fmt-card{padding:11px}.fmt-card .ft{font-size:14px}.fmt-card .fd{font-size:11px}
+.modal-mask{align-items:flex-end;justify-content:center;padding:0}
+.modal{width:100%;max-width:100%;border-radius:16px 16px 0 0;max-height:88dvh;max-height:88vh;animation:slideUp .22s ease}
+@keyframes slideUp{from{transform:translateY(60px);opacity:.6}to{transform:translateY(0);opacity:1}}
+.modal-h{padding:14px 16px}.modal-b{padding:14px 16px;gap:12px}
+.modal-f{padding:12px 16px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));flex-wrap:wrap}
+.modal-f .btn{height:46px;padding:0 16px;font-size:15px;font-weight:600;flex:1;justify-content:center;min-width:0}
+.modal-f .btn.primary{flex-basis:100%;order:-1;height:48px}
+.confirm-mask{align-items:flex-end;padding:0}
+.confirm-box{width:100%;border-radius:16px 16px 0 0}
+.confirm-f{padding-bottom:max(12px,env(safe-area-inset-bottom,0px))}
+.confirm-f .btn{flex:1;height:46px}
+}
+@media (max-width:400px){.fmt-grid{grid-template-columns:1fr}.editor{padding:16px 12px}}
+@media print{
+body{overflow:visible;height:auto;background:#fff}
+.topbar,.sidebar,.tabbar,.toolbar,.modal-mask,.toast,.drop-hint,.ctx-menu,.busy-mask,.fontsize-pop,.confirm-mask{display:none !important}
+.layout,.editor-wrap,.editor-scroll{display:block;height:auto;overflow:visible;padding:0;background:#fff}
+.editor{max-width:none;box-shadow:none;padding:0;min-height:0;font-size:12pt;line-height:1.8}
+.chapter-print-title{font-size:1.5em;text-align:center;margin:1em 0;page-break-before:always}
+.chapter-print-title:first-child{page-break-before:auto}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><span class="dot">书</span> 电子书编辑器</div>
+  <input class="title-input" id="bookTitle" value="我的电子书" placeholder="书名">
+  <button class="btn-accent" id="btnTOC"><span class="ic">📑</span> 目录</button>
+  <button class="btn-accent" id="btnNewChapterTop"><span class="ic">＋</span> 新章</button>
+  <div class="spacer"></div>
+  <span class="save-tag"><span class="pulse" id="savePulse"></span><span id="saveText">已保存到本地</span></span>
+  <div class="sep"></div>
+  <button class="btn" id="btnImport"><span class="ic">📂</span><span class="txt">导入</span></button>
+  <button class="btn" id="btnMeta"><span class="ic">⚙️</span><span class="txt">书籍信息</span></button>
+  <button class="btn" id="btnBookmark" title="书签（Ctrl/Cmd+B 添加）"><span class="ic">🔖</span><span class="txt">书签</span></button>
+  <button class="btn" id="btnInstall" style="display:none" title="安装到桌面/手机"><span class="ic">⬇</span><span class="txt">安装</span></button>
+  <button class="btn primary" id="btnExport"><span class="ic">💾</span><span class="txt">导出</span></button>
+  <input type="file" id="fileInput" accept=".epub,.html,.htm,.txt,.md,.json" style="display:none">
+</div>
+
+<div class="tabbar" id="tabbar"></div>
+
+<div class="layout">
+  <div class="sidebar">
+	<div class="sb-head">
+	  <h3>目录</h3>
+	  <div class="sb-tools">
+		<button class="icon-btn" id="btnAddChapter">＋</button>
+		<button class="icon-btn" id="btnMoveUp">↑</button>
+		<button class="icon-btn" id="btnMoveDown">↓</button>
+	  </div>
+	</div>
+	<div class="chapter-list" id="chapterList"></div>
+	<div class="sb-foot">
+	  <div class="meta-block"><label>作者</label><input id="bookAuthor" placeholder="佚名"></div>
+	  <div class="meta-block"><label>语言</label>
+		<select id="bookLang" class="tb-select" style="height:34px;width:100%">
+		  <option value="zh-CN">简体中文</option>
+		  <option value="zh-TW">繁體中文</option>
+		  <option value="en">English</option>
+		  <option value="ja">日本語</option>
+		</select>
+	  </div>
+	  <div class="meta-block" style="flex-direction:row;gap:8px">
+		<button class="btn" id="btnCover" style="flex:1;justify-content:center">🖼 封面</button>
+		<button class="btn" id="btnNew" style="flex:1;justify-content:center">🗑 新建</button>
+	  </div>
+	</div>
+  </div>
+
+  <div class="editor-wrap">
+	<div class="toolbar">
+	  <div class="grp">
+		<select class="tb-select" id="blockFormat">
+		  <option value="p">正文</option>
+		  <option value="h1">一级标题</option>
+		  <option value="h2">二级标题</option>
+		  <option value="h3">三级标题</option>
+		  <option value="blockquote">引用</option>
+		  <option value="pre">代码块</option>
+		</select>
+	  </div>
+	  <div class="sep"></div>
+	  <div class="grp">
+		<button class="tb-btn" data-cmd="bold"><b>B</b></button>
+		<button class="tb-btn" data-cmd="italic"><i>I</i></button>
+		<button class="tb-btn" data-cmd="underline"><u>U</u></button>
+		<button class="tb-btn" data-cmd="strikeThrough"><s>S</s></button>
+	  </div>
+	  <div class="sep"></div>
+	  <div class="grp">
+		<input type="color" class="tb-color" id="fontColor" value="#1f2430">
+		<div class="fontsize-wrap" id="fontsizeWrap">
+		  <button class="fontsize-btn" id="fontsizeBtn" type="button">
+			<span id="fontsizeLabel">中</span>
+			<span class="caret">▾</span>
+		  </button>
+		  <div class="fontsize-pop" id="fontsizePop">
+			<button type="button" data-size="12px">小 <span class="sz">12px</span></button>
+			<button type="button" data-size="16px">中 <span class="sz">16px</span></button>
+			<button type="button" data-size="20px">大 <span class="sz">20px</span></button>
+			<button type="button" data-size="26px">特大 <span class="sz">26px</span></button>
+		  </div>
+		</div>
+	  </div>
+	  <div class="sep"></div>
+	  <div class="grp">
+		<button class="tb-btn" data-cmd="justifyLeft">◧</button>
+		<button class="tb-btn" data-cmd="justifyCenter">▭</button>
+		<button class="tb-btn" data-cmd="justifyRight">◨</button>
+		<button class="tb-btn" data-cmd="insertUnorderedList">•</button>
+		<button class="tb-btn" data-cmd="insertOrderedList">1.</button>
+		<button class="tb-btn" data-cmd="indent">→</button>
+		<button class="tb-btn" data-cmd="outdent">←</button>
+	  </div>
+	  <div class="sep"></div>
+	  <div class="grp">
+		<button class="tb-btn" id="btnLink" title="插入超链接（填地址+文字）">🔗</button>
+		<button class="tb-btn" id="btnImage" title="插入单张图片">🖼</button>
+		<button class="tb-btn" id="btnBatchImage" title="批量插入图片（可一次选100张）">🖼️+</button>
+		<button class="tb-btn" id="btnTable">⊞</button>
+		<button class="tb-btn" id="btnHr">⚊</button>
+		<button class="tb-btn" id="btnCode">&lt;/&gt;</button>
+	  </div>
+	  <div class="sep"></div>
+	  <div class="grp">
+		<button class="tb-btn" id="btnUndo">↩</button>
+		<button class="tb-btn" id="btnRedo">↪</button>
+		<button class="tb-btn" id="btnClear">🧹</button>
+	  </div>
+	  <div class="spacer" style="flex:1"></div>
+	  <span class="wordcount" id="wordCount">0 字</span>
+	</div>
+	<div class="editor-scroll" id="editorScroll">
+	  <div class="editor" id="editor" contenteditable="true" spellcheck="false"
+		   data-placeholder="在此开始写作……&#10;点顶栏「＋ 新章」新建下一章，点「📑 目录」管理章节。"></div>
+	</div>
+  </div>
+</div>
+
+<div class="busy-mask" id="busyMask">
+  <div class="busy-box">
+	<div class="sp"></div>
+	<div class="msg" id="busyMsg">正在插入内容…</div>
+	<div class="sub" id="busySub"></div>
+  </div>
+</div>
+
+<div class="modal-mask toc-mask" id="tocModal">
+  <div class="modal">
+	<div class="modal-h">
+	  <span>目录（共 <span id="tocCount">0</span> 章）</span>
+	  <div class="mh-actions">
+		<button class="mh-btn" id="tocAddTop">＋ 新章</button>
+		<button class="mh-btn" data-close="tocModal">✕</button>
+	  </div>
+	</div>
+	<div class="modal-b"><div class="toc-list" id="tocList"></div></div>
+  </div>
+</div>
+
+<div class="modal-mask" id="exportModal">
+  <div class="modal">
+	<div class="modal-h">导出电子书</div>
+	<div class="modal-b">
+	  <div class="field">
+		<label>文件名（可修改，不含扩展名）</label>
+		<input id="exportName" placeholder="我的电子书">
+	  </div>
+	  <div class="field">
+		<label>选择导出格式</label>
+		<div class="fmt-grid">
+		  <div class="fmt-card" data-fmt="epub"><div class="ft">📖 EPUB</div><div class="fd">标准电子书（已压缩）</div></div>
+		  <div class="fmt-card" data-fmt="html"><div class="ft">🌐 HTML</div><div class="fd">单文件网页</div></div>
+		  <div class="fmt-card" data-fmt="pdf"><div class="ft">🖨 PDF</div><div class="fd">调用打印另存</div></div>
+		  <div class="fmt-card" data-fmt="txt"><div class="ft">📝 TXT</div><div class="fd">纯文本</div></div>
+		  <div class="fmt-card" data-fmt="json"><div class="ft">🗄 工程文件</div><div class="fd">可再次导入</div></div>
+		</div>
+	  </div>
+	</div>
+  </div>
+</div>
+
+<div class="modal-mask" id="exportDoneModal">
+  <div class="modal">
+	<div class="modal-h" id="exportDoneTitle">导出完成</div>
+	<div class="modal-b">
+	  <p id="exportDoneHint" style="margin:0;font-size:14px;line-height:1.7;color:var(--text)"></p>
+	  <div id="exportDonePreview" style="display:none;max-height:180px;overflow:auto;background:#f6f7f9;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;white-space:pre-wrap;word-break:break-all;color:#333"></div>
+	  <div id="exportDoneImg" style="display:none;text-align:center">
+		<img id="exportDoneImgEl" style="max-width:100%;max-height:200px;border-radius:8px" alt="预览">
+	  </div>
+	</div>
+	<div class="modal-f">
+	  <button class="btn" data-close="exportDoneModal">关闭</button>
+	  <button class="btn" id="exportDoneOpen">在新标签打开</button>
+	  <button class="btn primary" id="exportDoneCopy">复制到剪贴板</button>
+	</div>
+  </div>
+</div>
+
+<div class="modal-mask" id="pasteModal">
+  <div class="modal">
+	<div class="modal-h">检测到大段内容</div>
+	<div class="modal-b">
+	  <div class="field">
+		<label>即将插入 <span id="pasteSize">0</span> 字符</label>
+		<p style="font-size:13px;color:var(--sub);margin:0;line-height:1.6">
+		  内容较多，为保持编辑器流畅，请选择插入方式：<br>
+		  <b>纯文本模式</b>更稳定、更快；<br>
+		  <b>保留格式</b>会尝试保留加粗/标题等样式，但可能较慢。
+		</p>
+	  </div>
+	</div>
+	<div class="modal-f">
+	  <button class="btn" data-close="pasteModal">取消</button>
+	  <button class="btn" id="pasteFormat">保留格式</button>
+	  <button class="btn primary" id="pastePlain">纯文本插入</button>
+	</div>
+  </div>
+</div>
+
+<div class="modal-mask" id="linkModal">
+  <div class="modal">
+	<div class="modal-h">插入链接</div>
+	<div class="modal-b">
+	  <div class="field"><label>链接地址</label><input id="linkUrl" placeholder="https://example.com" type="url"></div>
+	  <div class="field"><label>显示文字（可选）</label><input id="linkText" placeholder="点这里"></div>
+	</div>
+	<div class="modal-f">
+	  <button class="btn" data-close="linkModal">取消</button>
+	  <button class="btn primary" id="linkConfirm">插入</button>
+	</div>
+  </div>
+</div>
+
+<div class="modal-mask" id="imageModal">
+  <div class="modal">
+	<div class="modal-h">插入图片</div>
+	<div class="modal-b">
+	  <div class="field"><label>方式一：粘贴图片地址</label><input id="imgUrl" placeholder="https://example.com/pic.jpg" type="url"></div>
+	  <div class="field"><label>方式二：从本机选择图片</label><input type="file" id="imgFile" accept="image/*"></div>
+	  <div class="img-preview" id="imgPreview"><img id="imgPreviewEl" alt="预览"></div>
+	</div>
+	<div class="modal-f">
+	  <button class="btn" data-close="imageModal">取消</button>
+	  <button class="btn primary" id="imageConfirm">插入</button>
+	</div>
+  </div>
+</div>
+
+<div class="modal-mask" id="tableModal">
+  <div class="modal">
+	<div class="modal-h">插入表格</div>
+	<div class="modal-b">
+	  <div class="field"><label>行数</label><input id="tblRows" type="number" min="1" max="20" value="3"></div>
+	  <div class="field"><label>列数</label><input id="tblCols" type="number" min="1" max="10" value="3"></div>
+	</div>
+	<div class="modal-f">
+	  <button class="btn" data-close="tableModal">取消</button>
+	  <button class="btn primary" id="tableConfirm">插入</button>
+	</div>
+  </div>
+</div>
+
+<div class="modal-mask" id="metaModal">
+  <div class="modal">
+	<div class="modal-h">书籍信息</div>
+	<div class="modal-b">
+	  <div class="field"><label>书名</label><input id="mTitle"></div>
+	  <div class="field"><label>作者</label><input id="mAuthor"></div>
+	  <div class="field"><label>简介</label><textarea id="mDesc"></textarea></div>
+	  <div class="field"><label>出版商</label><input id="mPublisher"></div>
+	  <div class="field"><label>语言</label>
+		<select id="mLang" class="tb-select" style="height:36px">
+		  <option value="zh-CN">简体中文</option>
+		  <option value="zh-TW">繁體中文</option>
+		  <option value="en">English</option>
+		  <option value="ja">日本語</option>
+		</select>
+	  </div>
+	</div>
+	<div class="modal-f">
+	  <button class="btn" data-close="metaModal">取消</button>
+	  <button class="btn primary" id="mSave">保存</button>
+	</div>
+  </div>
+</div>
+
+<div class="modal-mask" id="coverModal">
+  <div class="modal">
+	<div class="modal-h">选择封面</div>
+	<div class="modal-b">
+	  <div class="cover-pick" id="coverPick"></div>
+	  <div class="field">
+		<label>自定义图片</label>
+		<input type="file" id="coverFile" accept="image/*" style="font-size:12px">
+	  </div>
+	</div>
+	<div class="modal-f">
+	  <button class="btn" data-close="coverModal">取消</button>
+	  <button class="btn primary" id="coverSave">确定</button>
+	</div>
+  </div>
+</div>
+
+<div class="confirm-mask" id="confirmMask">
+  <div class="confirm-box">
+	<div class="confirm-h" id="confirmTitle">确认操作</div>
+	<div class="confirm-b" id="confirmBody">确定吗？</div>
+	<div class="confirm-f">
+	  <button class="btn" id="confirmCancel">取消</button>
+	  <button class="btn danger" id="confirmOk">确定</button>
+	</div>
+  </div>
+</div>
+
+<div class="ctx-menu" id="ctxMenu"></div>
+<div class="toast" id="toast"></div>
+<div class="drop-hint" id="dropHint"><div>松开以导入电子书</div></div>
+
+<script>
+(function(){
+'use strict';
+
+var STORE_KEY = 'ebook_editor_v8';
+var PASTE_WARN_CHARS = 20000;
+var PASTE_FORCE_PLAIN = 150000;
+
+var state = {
+  book: { title:'我的电子书', author:'佚名', desc:'', publisher:'', lang:'zh-CN', cover:null },
+  chapters: [],
+  activeId: null
+};
+var saveTimer = null;
+var wordCountTimer = null;
+var narrowQuery = window.matchMedia('(max-width: 820px)');
+var savedRange = null;
+var isComposing = false;
+var wordCountCache = { text:'', count:0 };
+var pendingPaste = null;
+var confirmResolver = null;
+
+function $(s, ctx){ return (ctx||document).querySelector(s); }
+function $$(s, ctx){ return Array.prototype.slice.call((ctx||document).querySelectorAll(s)); }
+function el(t, cls, html){
+  var n = document.createElement(t);
+  if(cls) n.className = cls;
+  if(html!=null) n.innerHTML = html;
+  return n;
+}
+function uid(){ return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
+}
+function plainText(html){ var d = document.createElement('div'); d.innerHTML = html||''; return (d.textContent||'').trim(); }
+function toast(msg){
+  var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+}
+function showMask(id){ var m = $('#'+id); if(m) m.classList.add('show'); }
+function hideMask(id){ var m = $('#'+id); if(m) m.classList.remove('show'); }
+function showBusy(msg, sub){
+  $('#busyMsg').textContent = msg || '处理中…';
+  $('#busySub').textContent = sub || '';
+  $('#busyMask').classList.add('show');
+}
+function hideBusy(){ $('#busyMask').classList.remove('show'); }
+
+/* ============================================================
+   MiniZip —— 内置 ZIP 读写（支持 DEFLATE 压缩）
+   ============================================================ */
+var CRC_TABLE = (function(){
+  var t = new Uint32Array(256);
+  for(var i=0;i<256;i++){
+    var c = i;
+    for(var k=0;k<8;k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(bytes){
+  var c = 0xFFFFFFFF;
+  for(var i=0;i<bytes.length;i++) c = (c >>> 8) ^ CRC_TABLE[(c ^ bytes[i]) & 0xFF];
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function utf8Encode(s){ return new TextEncoder().encode(s); }
+function utf8Decode(b){ return new TextDecoder('utf-8').decode(b); }
+function base64ToBytes(b64){
+  var bin = atob(b64);
+  var a = new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++) a[i] = bin.charCodeAt(i);
+  return a;
+}
+function bytesToBase64(bytes){
+  var out = '';
+  var CHUNK = 0x8000;
+  for(var i=0;i<bytes.length;i+=CHUNK){
+    out += String.fromCharCode.apply(null, bytes.subarray(i, i+CHUNK));
+  }
+  return btoa(out);
+}
+function inflateRaw(bytes){
+  if(typeof DecompressionStream === 'undefined'){
+    return Promise.reject(new Error('当前浏览器不支持解压 DEFLATE，请使用较新的 Chrome/Edge/Firefox/Safari'));
+  }
+  try{
+    var ds = new DecompressionStream('deflate-raw');
+    var stream = new Blob([bytes]).stream().pipeThrough(ds);
+    return new Response(stream).arrayBuffer().then(function(buf){ return new Uint8Array(buf); });
+  }catch(e){ return Promise.reject(e); }
+}
+function deflateRaw(bytes){
+  if(typeof CompressionStream === 'undefined') return Promise.resolve(null);
+  try{
+    var cs = new CompressionStream('deflate-raw');
+    var stream = new Blob([bytes]).stream().pipeThrough(cs);
+    return new Response(stream).arrayBuffer()
+      .then(function(buf){ return new Uint8Array(buf); })
+      .catch(function(){ return null; });
+  }catch(e){ return Promise.resolve(null); }
+}
+function toUint8(input){
+  if(input instanceof Uint8Array) return Promise.resolve(input);
+  if(input instanceof ArrayBuffer) return Promise.resolve(new Uint8Array(input));
+  if(typeof Blob !== 'undefined' && input instanceof Blob){
+    return input.arrayBuffer().then(function(b){ return new Uint8Array(b); });
+  }
+  return Promise.resolve(input).then(toUint8);
+}
+function parseZipEntries(bytes){
+  var view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  var eocd = -1;
+  var minOff = Math.max(0, bytes.length - 65557);
+  for(var i = bytes.length - 22; i >= minOff; i--){
+    if(bytes[i] === 0x50 && bytes[i+1] === 0x4b && bytes[i+2] === 0x05 && bytes[i+3] === 0x06){ eocd = i; break; }
+  }
+  if(eocd < 0) throw new Error('不是有效的 ZIP / EPUB 文件');
+  var total = view.getUint16(eocd + 10, true);
+  var cdOffset = view.getUint32(eocd + 16, true);
+  var entries = [];
+  var p = cdOffset;
+  for(var n=0; n<total; n++){
+    if(view.getUint32(p, true) !== 0x02014b50) break;
+    var method = view.getUint16(p + 10, true);
+    var compSize = view.getUint32(p + 20, true);
+    var uncompSize = view.getUint32(p + 24, true);
+    var nameLen = view.getUint16(p + 28, true);
+    var extraLen = view.getUint16(p + 30, true);
+    var commentLen = view.getUint16(p + 32, true);
+    var localOff = view.getUint32(p + 42, true);
+    var name = utf8Decode(bytes.subarray(p + 46, p + 46 + nameLen));
+    if(compSize === 0xffffffff || uncompSize === 0xffffffff || localOff === 0xffffffff){
+      var ep = p + 46 + nameLen;
+      var end = ep + extraLen;
+      while(ep + 4 <= end){
+        var hid = view.getUint16(ep, true);
+        var hsz = view.getUint16(ep + 2, true);
+        if(hid === 0x0001){
+          var q = ep + 4;
+          try{
+            if(uncompSize === 0xffffffff){ uncompSize = Number(view.getBigUint64(q, true)); q += 8; }
+            if(compSize === 0xffffffff){ compSize = Number(view.getBigUint64(q, true)); q += 8; }
+            if(localOff === 0xffffffff){ localOff = Number(view.getBigUint64(q, true)); q += 8; }
+          }catch(e){}
+        }
+        ep += 4 + hsz;
+      }
+    }
+    if(view.getUint32(localOff, true) !== 0x04034b50){
+      p += 46 + nameLen + extraLen + commentLen;
+      continue;
+    }
+    var lNameLen = view.getUint16(localOff + 26, true);
+    var lExtraLen = view.getUint16(localOff + 28, true);
+    var dataStart = localOff + 30 + lNameLen + lExtraLen;
+    entries.push({ name:name, method:method, compressed:bytes.subarray(dataStart, dataStart + compSize), size:uncompSize });
+    p += 46 + nameLen + extraLen + commentLen;
+  }
+  return entries;
+}
+
+function MiniZip(){ this._entries = null; this._out = []; }
+MiniZip.loadAsync = function(input){
+  return toUint8(input).then(function(bytes){
+    var z = new MiniZip();
+    z._entries = parseZipEntries(bytes);
+    return z;
+  });
+};
+MiniZip.prototype._find = function(name){
+  if(!this._entries) return null;
+  var lc = name.toLowerCase();
+  for(var i=0;i<this._entries.length;i++){ if(this._entries[i].name === name) return this._entries[i]; }
+  for(var j=0;j<this._entries.length;j++){ if(this._entries[j].name.toLowerCase() === lc) return this._entries[j]; }
+  return null;
+};
+MiniZip.prototype._read = function(entry){
+  if(entry._cache) return Promise.resolve(entry._cache);
+  var p;
+  if(entry.method === 0) p = Promise.resolve(entry.compressed);
+  else if(entry.method === 8) p = inflateRaw(entry.compressed);
+  else p = Promise.reject(new Error('不支持的压缩方式: ' + entry.method));
+  return p.then(function(bytes){ entry._cache = bytes; return bytes; });
+};
+MiniZip.prototype._entryObject = function(entry){
+  if(entry._obj) return entry._obj;
+  var self = this;
+  entry._obj = {
+    async: function(type){
+      return self._read(entry).then(function(bytes){
+        if(type === 'base64') return bytesToBase64(bytes);
+        if(type === 'string') return utf8Decode(bytes);
+        return bytes;
+      });
+    }
+  };
+  return entry._obj;
+};
+MiniZip.prototype.file = function(name, data, opts){
+  if(data === undefined){
+    var e = this._find(name);
+    if(!e) return null;
+    return this._entryObject(e);
+  }
+  var bytes;
+  if(data instanceof Uint8Array) bytes = data;
+  else if(data instanceof ArrayBuffer) bytes = new Uint8Array(data);
+  else if(typeof data === 'string'){
+    if(opts && opts.base64) bytes = base64ToBytes(data);
+    else bytes = utf8Encode(data);
+  } else bytes = utf8Encode(String(data));
+  this._out.push({ name: name, data: bytes });
+  return this;
+};
+MiniZip.prototype.forEach = function(cb){
+  var self = this;
+  if(!this._entries) return;
+  this._entries.forEach(function(e){ cb(e.name, self._entryObject(e)); });
+};
+MiniZip.prototype.folder = function(name){
+  var self = this;
+  var prefix = name.replace(/\/+$/, '') + '/';
+  return {
+    file: function(n, d, o){ return self.file(prefix + n, d, o); },
+    folder: function(n){ return self.folder(prefix + n); }
+  };
+};
+MiniZip.prototype.generateAsync = function(opts){
+  var files = this._out;
+  var COMPRESSIBLE = /\.(x?html|xml|css|txt|opf|ncx|json|js|svg)$/i;
+
+  var tasks = files.map(function(f){
+    var shouldCompress = COMPRESSIBLE.test(f.name) && f.name !== 'mimetype' && typeof CompressionStream !== 'undefined';
+    if(!shouldCompress){
+      return Promise.resolve({ name:f.name, data:f.data, method:0, crc:crc32(f.data), uncompressedSize:f.data.length });
+    }
+    return deflateRaw(f.data).then(function(z){
+      if(!z || z.length >= f.data.length){
+        return { name:f.name, data:f.data, method:0, crc:crc32(f.data), uncompressedSize:f.data.length };
+      }
+      return { name:f.name, data:z, method:8, crc:crc32(f.data), uncompressedSize:f.data.length };
+    });
+  });
+
+  return Promise.all(tasks).then(function(prepared){
+    var chunks = [], central = [], offset = 0;
+    var now = new Date();
+    var dosTime = ((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1)) & 0xFFFF;
+    var dosDate = (((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate()) & 0xFFFF;
+
+    prepared.forEach(function(f){
+      var nameBytes = utf8Encode(f.name);
+      var compSize = f.data.length;
+      var uncompSize = f.uncompressedSize;
+      var flags = 0x0800;
+      var method = f.method;
+
+      var lh = new Uint8Array(30 + nameBytes.length);
+      var lv = new DataView(lh.buffer);
+      lv.setUint32(0, 0x04034b50, true);
+      lv.setUint16(4, 20, true);
+      lv.setUint16(6, flags, true);
+      lv.setUint16(8, method, true);
+      lv.setUint16(10, dosTime, true);
+      lv.setUint16(12, dosDate, true);
+      lv.setUint32(14, f.crc, true);
+      lv.setUint32(18, compSize, true);
+      lv.setUint32(22, uncompSize, true);
+      lv.setUint16(26, nameBytes.length, true);
+      lv.setUint16(28, 0, true);
+      lh.set(nameBytes, 30);
+      chunks.push(lh, f.data);
+
+      var cd = new Uint8Array(46 + nameBytes.length);
+      var cv = new DataView(cd.buffer);
+      cv.setUint32(0, 0x02014b50, true);
+      cv.setUint16(4, 20, true);
+      cv.setUint16(6, 20, true);
+      cv.setUint16(8, flags, true);
+      cv.setUint16(10, method, true);
+      cv.setUint16(12, dosTime, true);
+      cv.setUint16(14, dosDate, true);
+      cv.setUint32(16, f.crc, true);
+      cv.setUint32(20, compSize, true);
+      cv.setUint32(24, uncompSize, true);
+      cv.setUint16(28, nameBytes.length, true);
+      cv.setUint32(42, offset, true);
+      cd.set(nameBytes, 46);
+      central.push(cd);
+      offset += lh.length + f.data.length;
+    });
+
+    var cdSize = central.reduce(function(s,c){ return s+c.length; }, 0);
+    var eocd = new Uint8Array(22);
+    var ev = new DataView(eocd.buffer);
+    ev.setUint32(0, 0x06054b50, true);
+    ev.setUint16(8, prepared.length, true);
+    ev.setUint16(10, prepared.length, true);
+    ev.setUint32(12, cdSize, true);
+    ev.setUint32(16, offset, true);
+
+    return new Blob(chunks.concat(central, [eocd]), {
+      type: (opts && opts.mimeType) || 'application/zip'
+    });
+  });
+};
+
+/* ============================================================
+   PWA
+   ============================================================ */
+var deferredPrompt = null;
+function initPWA(){
+  var ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">'
+    + '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+    + '<stop offset="0" stop-color="#4a7dff"/><stop offset="1" stop-color="#2f6fed"/></linearGradient></defs>'
+    + '<rect width="512" height="512" fill="url(#g)"/>'
+    + '<path d="M136 168 Q168 148 256 148 Q344 148 376 168 L376 372 Q344 352 256 352 Q168 352 136 372 Z" fill="#ffffff"/>'
+    + '<line x1="256" y1="148" x2="256" y2="352" stroke="#2f6fed" stroke-width="14"/>'
+    + '</svg>';
+  var ICON_DATA = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(ICON_SVG);
+  var pagePath = (location.pathname || '/');
+  if(!/\/$/.test(pagePath) && !/\.[a-z0-9]+$/i.test(pagePath)) pagePath = pagePath + '/';
+  var dirPath = pagePath.replace(/[^/]*$/, '') || '/';
+  var manifest = {
+    name: '电子书编辑器', short_name: '电子书',
+    description: '离线写作 · 分章管理 · 导出 EPUB / HTML / PDF / TXT',
+    start_url: pagePath, scope: dirPath, display: 'standalone',
+    orientation: 'portrait-primary', background_color: '#f6f7f9', theme_color: '#2f6fed',
+    lang: 'zh-CN', categories: ['books', 'productivity'],
+    icons: [
+      { src: ICON_DATA, sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+      { src: ICON_DATA, sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' }
+    ]
+  };
+  try{
+    var mfLink = document.getElementById('appManifest');
+    if(mfLink) mfLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
+  }catch(e){}
+  var appleIcon = document.getElementById('appleIcon');
+  if(appleIcon) appleIcon.href = ICON_DATA;
+  var btn = document.getElementById('btnInstall');
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault(); deferredPrompt = e;
+    if(btn) btn.style.display = 'inline-flex';
+  });
+  if(btn){
+    btn.onclick = function(){
+      if(!deferredPrompt){ toast('请用浏览器菜单「添加到主屏幕」手动安装'); return; }
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(choice){
+        if(choice.outcome === 'accepted') toast('已添加到桌面');
+        deferredPrompt = null; btn.style.display = 'none';
+      });
+    };
+  }
+  window.addEventListener('appinstalled', function(){
+    if(btn) btn.style.display = 'none';
+    toast('已安装，可从桌面直接打开');
+  });
+}
+
+/* ---------- 通用确认框 ---------- */
+function appConfirm(title, bodyHtml, okText, danger){
+  return new Promise(function(resolve){
+	confirmResolver = resolve;
+	$('#confirmTitle').textContent = title || '确认操作';
+	$('#confirmBody').innerHTML = bodyHtml || '确定吗？';
+	var okBtn = $('#confirmOk');
+	okBtn.textContent = okText || '确定';
+	okBtn.className = 'btn ' + (danger ? 'danger' : 'primary');
+	$('#confirmMask').classList.add('show');
+  });
+}
+function closeConfirm(val){
+  $('#confirmMask').classList.remove('show');
+  if(confirmResolver){ var r = confirmResolver; confirmResolver = null; r(val); }
+}
+function bindConfirm(){
+  $('#confirmCancel').onclick = function(){ closeConfirm(false); };
+  $('#confirmOk').onclick = function(){ closeConfirm(true); };
+  $('#confirmMask').onclick = function(ev){ if(ev.target === $('#confirmMask')) closeConfirm(false); };
+  document.addEventListener('keydown', function(ev){
+	if(ev.key === 'Escape' && $('#confirmMask').classList.contains('show')) closeConfirm(false);
+  });
+}
+
+/* ---------- 保存 ---------- */
+function scheduleSave(){
+  clearTimeout(saveTimer);
+  $('#saveText').textContent = '未保存';
+  $('#savePulse').style.background = 'var(--warn)';
+  saveTimer = setTimeout(function(){
+	var doSave = function(){
+	  try{
+		flushEditor();
+		var data = JSON.stringify({
+		  book: state.book,
+		  chapters: state.chapters.map(function(c){ return { id:c.id, title:c.title, html:c.html }; }),
+		  activeId: state.activeId
+		});
+		if(data.length > 4 * 1024 * 1024){
+		  $('#saveText').textContent = '内容过大，未存盘';
+		  $('#savePulse').style.background = 'var(--warn)';
+		  return;
+		}
+		localStorage.setItem(STORE_KEY, data);
+		$('#saveText').textContent = '已保存到本地';
+		$('#savePulse').style.background = 'var(--ok)';
+	  }catch(e){
+		$('#saveText').textContent = '保存失败';
+		$('#savePulse').style.background = 'var(--danger)';
+	  }
+	};
+	if(window.requestIdleCallback) window.requestIdleCallback(doSave, { timeout: 2000 });
+	else setTimeout(doSave, 0);
+  }, 1200);
+}
+
+/* ---------- 章节 ---------- */
+function getChapter(id){ return state.chapters.find(function(c){ return c.id===id; }); }
+function getActive(){ return getChapter(state.activeId); }
+function flushEditor(){
+  var c = getActive();
+  if(c){
+	var html = $('#editor').innerHTML;
+	if(html !== c.html) c.html = html;
+  }
+}
+function nextChapterNumber(){
+  var max = 0;
+  state.chapters.forEach(function(c){
+	var m = String(c.title||'').match(/第\s*(\d+)\s*章/);
+	if(m){ var n = parseInt(m[1],10); if(n>max) max = n; }
+  });
+  return Math.max(max+1, state.chapters.length+1);
+}
+function addChapter(opts){
+  opts = opts || {};
+  flushEditor();
+  var c = { id: uid(), title: opts.title || ('第 ' + nextChapterNumber() + ' 章'), html: opts.html || '' };
+  if(state.activeId){
+	var i = state.chapters.findIndex(function(x){ return x.id===state.activeId; });
+	if(i >= 0) state.chapters.splice(i+1, 0, c);
+	else state.chapters.push(c);
+  } else state.chapters.push(c);
+  switchToChapter(c.id, true);
+  toast('已新建「' + c.title + '」');
+  scheduleSave();
+  return c;
+}
+function deleteChapter(id){
+  var c = getChapter(id);
+  if(!c){ toast('章节不存在'); return; }
+  if(state.chapters.length <= 1){ toast('至少保留一章，不能删除最后一章'); return; }
+  flushEditor();
+  appConfirm(
+	'删除章节',
+	'确定删除「<span class="target">' + esc(c.title || '未命名') + '</span>」吗？<br><span style="color:var(--sub);font-size:13px">此操作不可撤销，建议先导出备份。</span>',
+	'删除', true
+  ).then(function(ok){
+	if(!ok){ toast('已取消'); return; }
+	var i = state.chapters.findIndex(function(x){ return x.id===id; });
+	if(i < 0){ toast('章节已不存在'); return; }
+	var wasActive = (state.activeId === id);
+	state.chapters.splice(i, 1);
+	var nextActiveId = state.activeId;
+	if(wasActive){
+	  var next = state.chapters[i] || state.chapters[i-1] || state.chapters[0];
+	  nextActiveId = next ? next.id : null;
+	}
+	if(nextActiveId) switchToChapter(nextActiveId, true);
+	else {
+	  state.activeId = null;
+	  var edEl = $('#editor');
+	  var wasListening = removeEditorListeners();
+	  edEl.innerHTML = '';
+	  if(wasListening) addEditorListeners();
+	  refreshViews();
+	}
+	toast('已删除「' + c.title + '」');
+	scheduleSave();
+  });
+}
+function moveChapter(fromId, toId){
+  if(fromId===toId) return;
+  var fi = state.chapters.findIndex(function(c){ return c.id===fromId; });
+  if(fi<0) return;
+  var item = state.chapters[fi];
+  state.chapters.splice(fi,1);
+  var ti = state.chapters.findIndex(function(c){ return c.id===toId; });
+  if(ti<0) ti = state.chapters.length;
+  state.chapters.splice(ti, 0, item);
+  refreshViews(); scheduleSave();
+}
+function moveChapterBy(dir){
+  var i = state.chapters.findIndex(function(c){ return c.id===state.activeId; });
+  if(i<0) return;
+  var t = i + dir;
+  if(t<0 || t>=state.chapters.length) return;
+  var item = state.chapters.splice(i,1)[0];
+  state.chapters.splice(t, 0, item);
+  refreshViews(); scheduleSave();
+}
+function switchToChapter(id, keepEditor){
+  if(!keepEditor) flushEditor();
+  var c = getChapter(id);
+  if(!c){
+	if(state.chapters.length){ c = state.chapters[0]; id = c.id; }
+	else {
+	  state.activeId = null;
+	  var edEl0 = $('#editor');
+	  var wasListening0 = removeEditorListeners();
+	  edEl0.innerHTML = '';
+	  if(wasListening0) addEditorListeners();
+	  refreshViews();
+	  return;
+	}
+  }
+  state.activeId = id;
+  var edEl = $('#editor');
+  var wasListening = removeEditorListeners();
+  edEl.innerHTML = c.html || '';
+  if(wasListening) addEditorListeners();
+  try{ var sel = window.getSelection(); if(sel) sel.removeAllRanges(); savedRange = null; }catch(e){}
+  document.title = (state.book.title||'电子书') + ' · ' + c.title;
+  refreshViews();
+  var scroll = $('#editorScroll');
+  if(scroll){ scroll.scrollTop = 0; requestAnimationFrame(function(){ scroll.scrollTop = 0; }); }
+  scheduleUpdateWordCount(true);
+}
+function refreshViews(){ renderChapters(); renderTabs(); renderTOC(); }
+
+function renderChapters(){
+  var box = $('#chapterList'); if(!box) return;
+  box.innerHTML = '';
+  if(!state.chapters.length){
+	box.appendChild(el('div', 'empty-chap', '点击 ＋ 添加第一章<br>或导入已有 EPUB / HTML'));
+	return;
+  }
+  state.chapters.forEach(function(c, i){
+	var row = el('div', 'chapter' + (c.id===state.activeId?' active':''));
+	row.draggable = !narrowQuery.matches;
+	row.dataset.id = c.id;
+	row.dataset.action = 'switch';
+	row.appendChild(el('div','num', String(i+1)));
+	var ct = el('div','ct', esc(c.title) || '（未命名）');
+	ct.title = '双击可重命名'; ct.dataset.action = 'rename';
+	row.appendChild(ct);
+	var del = el('span','del','✕'); del.title = '删除本章'; del.dataset.action = 'delete';
+	row.appendChild(del);
+	if(!narrowQuery.matches){
+	  row.ondragstart = function(ev){ ev.dataTransfer.setData('text/plain', c.id); ev.dataTransfer.effectAllowed='move'; row.style.opacity='.5'; };
+	  row.ondragend = function(){ row.style.opacity=''; $$('.chapter').forEach(function(n){ n.classList.remove('drag-over'); }); };
+	  row.ondragover = function(ev){ ev.preventDefault(); row.classList.add('drag-over'); };
+	  row.ondragleave = function(){ row.classList.remove('drag-over'); };
+	  row.ondrop = function(ev){ ev.preventDefault(); row.classList.remove('drag-over'); moveChapter(ev.dataTransfer.getData('text/plain'), c.id); };
+	}
+	box.appendChild(row);
+  });
+}
+
+function renderTabs(){
+  var bar = $('#tabbar'); if(!bar) return;
+  bar.innerHTML = '';
+  if(!state.chapters.length) return;
+  state.chapters.forEach(function(c, i){
+	var tab = el('div', 'tab' + (c.id===state.activeId?' active':''));
+	tab.dataset.id = c.id; tab.dataset.action = 'switch';
+	tab.appendChild(el('span', 'tnum', String(i+1)));
+	tab.appendChild(el('span', 'tlabel', esc(c.title) || ('第 '+(i+1)+' 章')));
+	if(c.id === state.activeId && state.chapters.length > 1){
+	  var del = el('span', 'tdel', '✕'); del.title = '删除本章'; del.dataset.action = 'delete';
+	  tab.appendChild(del);
+	}
+	bar.appendChild(tab);
+  });
+  var addBtn = el('div', 'tab-add'); addBtn.innerHTML = '＋ 新章'; addBtn.dataset.action = 'add';
+  bar.appendChild(addBtn);
+  setTimeout(scrollActiveTabIntoView, 30);
+}
+function scrollActiveTabIntoView(){
+  var active = $('#tabbar .tab.active');
+  if(active && active.scrollIntoView){ try{ active.scrollIntoView({ behavior:'smooth', inline:'center', block:'nearest' }); }catch(e){} }
+}
+
+function renderTOC(){
+  var list = $('#tocList'); if(!list) return;
+  list.innerHTML = '';
+  $('#tocCount').textContent = state.chapters.length;
+  if(!state.chapters.length){ list.appendChild(el('div', 'toc-empty', '还没有章节')); return; }
+  state.chapters.forEach(function(c, i){
+	var row = el('div', 'toc-row' + (c.id===state.activeId?' active':''));
+	row.dataset.id = c.id; row.dataset.action = 'switch';
+	row.appendChild(el('span', 'tnum', String(i+1)));
+	var label = el('span', 'tlabel', esc(c.title) || ('第 '+(i+1)+' 章'));
+	label.title = '双击可重命名'; label.dataset.action = 'rename';
+	row.appendChild(label);
+	var up = el('button', 'tbtn', '↑'); up.title='上移'; up.dataset.action='up'; row.appendChild(up);
+	var down = el('button', 'tbtn', '↓'); down.title='下移'; down.dataset.action='down'; row.appendChild(down);
+	var rn = el('button', 'tbtn', '✎'); rn.title='重命名'; rn.dataset.action='rename'; row.appendChild(rn);
+	var del = el('button', 'tbtn danger', '🗑'); del.title='删除本章'; del.dataset.action='delete'; row.appendChild(del);
+	list.appendChild(row);
+  });
+}
+
+function startRename(ctNode, c){
+  if(!ctNode) return;
+  var row = ctNode.parentNode;
+  if(row.querySelector('input.title-edit')) return;
+  var input = document.createElement('input');
+  input.className = 'title-edit'; input.value = c.title;
+  row.replaceChild(input, ctNode);
+  input.focus(); input.select();
+  function commit(){ c.title = input.value.trim() || '未命名'; refreshViews(); scheduleSave(); }
+  input.onblur = commit;
+  input.onkeydown = function(ev){
+	if(ev.key==='Enter'){ ev.preventDefault(); input.blur(); }
+	else if(ev.key==='Escape'){ input.value = c.title; input.blur(); }
+  };
+  input.onclick = function(ev){ ev.stopPropagation(); };
+}
+function startRenameTab(tab, c){
+  if(tab.querySelector('input')) return;
+  var label = tab.querySelector('.tlabel'); if(!label) return;
+  var input = document.createElement('input');
+  input.className = 'tab-edit-input'; input.value = c.title;
+  tab.replaceChild(input, label);
+  input.focus(); input.select();
+  function commit(){ c.title = input.value.trim() || '未命名'; refreshViews(); scheduleSave(); }
+  input.onblur = commit;
+  input.onkeydown = function(ev){
+	if(ev.key==='Enter'){ ev.preventDefault(); input.blur(); }
+	else if(ev.key==='Escape'){ input.value = c.title; input.blur(); }
+  };
+  input.onclick = function(ev){ ev.stopPropagation(); };
+}
+function startTocRename(row, c){
+  if(row.querySelector('input.tlabel-edit')) return;
+  var label = row.querySelector('.tlabel'); if(!label) return;
+  var input = document.createElement('input');
+  input.className = 'tlabel-edit'; input.value = c.title;
+  row.replaceChild(input, label);
+  input.focus(); input.select();
+  function commit(){ c.title = input.value.trim() || '未命名'; refreshViews(); scheduleSave(); }
+  input.onblur = commit;
+  input.onkeydown = function(ev){
+	if(ev.key==='Enter'){ ev.preventDefault(); input.blur(); }
+	else if(ev.key==='Escape'){ input.value = c.title; input.blur(); }
+  };
+  input.onclick = function(ev){ ev.stopPropagation(); };
+}
+
+function openCtxMenu(anchorEl, c){
+  var menu = $('#ctxMenu'); menu.innerHTML = '';
+  var r = anchorEl.getBoundingClientRect();
+  var items = [
+	{ icon:'✎', text:'重命名', onClick: function(){ closeCtxMenu(); startRenameTab(anchorEl, c); } },
+	{ icon:'＋', text:'在下方新建', onClick: function(){ closeCtxMenu(); switchToChapter(c.id, true); setTimeout(function(){ addChapter(); }, 0); } },
+	{ sep:true },
+	{ icon:'🗑', text:'删除本章', danger:true, onClick: function(){ closeCtxMenu(); deleteChapter(c.id); } }
+  ];
+  items.forEach(function(it){
+	if(it.sep){ menu.appendChild(el('div','ctx-sep')); return; }
+	var elm = el('div', 'ctx-item' + (it.danger?' danger':''), '<span>'+it.icon+'</span><span>'+it.text+'</span>');
+	elm.onclick = function(ev){ ev.stopPropagation(); it.onClick(); };
+	menu.appendChild(elm);
+  });
+  menu.classList.add('show');
+  var mw = menu.offsetWidth, mh = menu.offsetHeight;
+  var left = Math.min(Math.max(8, r.left + r.width/2 - mw/2), window.innerWidth - mw - 8);
+  var top = r.bottom + 6;
+  if(top + mh > window.innerHeight - 8) top = Math.max(8, r.top - mh - 6);
+  menu.style.left = left + 'px'; menu.style.top = top + 'px';
+  setTimeout(function(){
+	document.addEventListener('click', onDocClick, {once:true});
+	document.addEventListener('touchstart', onDocClick, {once:true});
+  }, 0);
+  function onDocClick(ev){ if(!menu.contains(ev.target)) closeCtxMenu(); }
+}
+function closeCtxMenu(){ $('#ctxMenu').classList.remove('show'); }
+
+function scheduleUpdateWordCount(immediate){
+  clearTimeout(wordCountTimer);
+  if(immediate){ updateWordCount(); return; }
+  wordCountTimer = setTimeout(updateWordCount, 300);
+}
+function updateWordCount(){
+  var ed = $('#editor');
+  var text;
+  try{ text = ed.textContent || ''; }catch(e){ return; }
+  if(text === wordCountCache.text) return;
+  wordCountCache.text = text;
+  if(text.length > 100000){ $('#wordCount').textContent = '约 ' + Math.round(text.length/1000) + 'k 字'; return; }
+  var cn = (text.match(/[\u4e00-\u9fa5]/g)||[]).length;
+  var en = (text.replace(/[\u4e00-\u9fa5\s\W]/g,'').length);
+  var total = cn+en;
+  wordCountCache.count = total;
+  $('#wordCount').textContent = total + ' 字';
+}
+
+function saveSelection(){
+  var sel = window.getSelection();
+  if(sel && sel.rangeCount){
+	var r = sel.getRangeAt(0);
+	var ed = $('#editor');
+	if(ed.contains(r.commonAncestorContainer)){ savedRange = r.cloneRange(); }
+  }
+}
+function restoreSelection(){
+  if(!savedRange) return;
+  try{ var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedRange); $('#editor').focus(); }catch(e){}
+}
+function insertHtmlAtCursor(html){
+  $('#editor').focus(); restoreSelection();
+  try{ var ok = document.execCommand('insertHTML', false, html); if(!ok) throw new Error('fail'); }
+  catch(e){
+	var sel = window.getSelection();
+	if(sel && sel.rangeCount){
+	  var range = sel.getRangeAt(0);
+	  range.deleteContents();
+	  var frag = range.createContextualFragment(html);
+	  range.insertNode(frag);
+	  range.collapse(false);
+	} else {
+	  $('#editor').insertAdjacentHTML('beforeend', html);
+	}
+  }
+  scheduleSave(); scheduleUpdateWordCount();
+}
+function exec(cmd, val){
+  $('#editor').focus();
+  try{ document.execCommand(cmd, false, val||null); }catch(e){}
+  scheduleSave(); scheduleUpdateWordCount();
+}
+
+function applyFontSize(px){
+  var ed = $('#editor');
+  var sel = window.getSelection();
+  if((!sel || !sel.rangeCount || sel.isCollapsed) && savedRange){
+	try{ sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedRange); }catch(e){}
+  }
+  var hasSel = false;
+  try{
+	if(sel && sel.rangeCount && !sel.isCollapsed){
+	  var r0 = sel.getRangeAt(0);
+	  hasSel = ed.contains(r0.commonAncestorContainer) || ed === r0.commonAncestorContainer;
+	}
+  }catch(e){}
+  if(!hasSel){ toast('请先选中要改字号的文字'); return; }
+  ed.focus();
+  try{ sel = window.getSelection(); if(savedRange){ sel.removeAllRanges(); sel.addRange(savedRange); } }catch(e){}
+  var ok = false;
+  try{ ok = document.execCommand('fontSize', false, '7'); }catch(e){}
+  var fonts = ed.querySelectorAll('font[size="7"]');
+  if(ok && fonts.length){
+	for(var i=0; i<fonts.length; i++){
+	  var f = fonts[i];
+	  var span = document.createElement('span'); span.style.fontSize = px;
+	  while(f.firstChild) span.appendChild(f.firstChild);
+	  f.parentNode.replaceChild(span, f);
+	}
+	saveSelection(); scheduleSave(); scheduleUpdateWordCount();
+	toast('已应用字号'); return;
+  }
+  try{
+	var sel2 = window.getSelection();
+	if(sel2 && sel2.rangeCount && !sel2.isCollapsed){
+	  var range = sel2.getRangeAt(0);
+	  var span2 = document.createElement('span'); span2.style.fontSize = px;
+	  span2.appendChild(range.extractContents());
+	  range.insertNode(span2);
+	  range.setStartAfter(span2); range.collapse(true);
+	  sel2.removeAllRanges(); sel2.addRange(range);
+	  savedRange = range.cloneRange();
+	  scheduleSave(); scheduleUpdateWordCount();
+	  toast('已应用字号'); return;
+	}
+  }catch(e){}
+  toast('字号修改失败，请重试');
+}
+
+/* ---------- 编辑器事件 ---------- */
+function onEditorInput(){ if(isComposing) return; scheduleUpdateWordCount(); scheduleSave(); }
+function onEditorBlur(){ flushEditor(); }
+function onEditorKeydown(ev){
+  if(ev.key==='Enter' && (ev.ctrlKey||ev.metaKey)){ ev.preventDefault(); addChapter(); }
+}
+function onEditorPaste(ev){
+  var cd = ev.clipboardData; if(!cd) return;
+  var html = cd.getData('text/html');
+  var text = cd.getData('text/plain');
+  if(!html && text){ scheduleSave(); scheduleUpdateWordCount(); return; }
+  if(!html) return;
+  var totalLen = (html.length||0);
+  ev.preventDefault();
+  if(totalLen > PASTE_FORCE_PLAIN){
+	pendingPaste = { html: html, text: text, mode:'plain' };
+	insertPlainTextChunk(text || stripTags(html)); return;
+  }
+  if(totalLen > PASTE_WARN_CHARS){
+	pendingPaste = { html: html, text: text };
+	$('#pasteSize').textContent = totalLen.toLocaleString();
+	showMask('pasteModal'); return;
+  }
+  insertHtmlSafely(html);
+}
+function stripTags(html){ var d = document.createElement('div'); d.innerHTML = html; return d.textContent || ''; }
+function insertHtmlSafely(html){
+  var tmp = document.createElement('div'); tmp.innerHTML = html;
+  var bad = tmp.querySelectorAll('script,style,meta,link,iframe,object,embed');
+  for(var i=bad.length-1; i>=0; i--) bad[i].parentNode.removeChild(bad[i]);
+  var content = tmp.innerHTML;
+  try{ document.execCommand('insertHTML', false, content); }
+  catch(e){ insertHtmlAtCursor(content); }
+  scheduleSave(); scheduleUpdateWordCount();
+}
+function insertPlainTextChunk(text){
+  if(!text){ hideMask('pasteModal'); return; }
+  var ed = $('#editor');
+  var CHUNK = 50000;
+  var total = text.length;
+  restoreSelection();
+  try{
+	var sel = window.getSelection();
+	if(sel && sel.rangeCount){ var r = sel.getRangeAt(0); r.deleteContents(); r.collapse(true); savedRange = r.cloneRange(); }
+  }catch(e){}
+  if(total <= CHUNK){
+	ed.focus();
+	try{ document.execCommand('insertText', false, text); }
+	catch(e){ insertNodeAtSelection(document.createTextNode(text)); }
+	hideMask('pasteModal'); scheduleSave(); scheduleUpdateWordCount(true); return;
+  }
+  showBusy('正在插入大段文本…', '共 ' + total.toLocaleString() + ' 字符');
+  var offset = 0; var parts = [];
+  for(var i=0; i<total; i+=CHUNK){ parts.push(text.slice(i, i+CHUNK)); }
+  function step(){
+	if(offset >= parts.length){
+	  hideBusy(); hideMask('pasteModal'); scheduleSave(); scheduleUpdateWordCount(true);
+	  toast('已插入 ' + total.toLocaleString() + ' 字符'); return;
+	}
+	var part = parts[offset];
+	ed.focus();
+	var ok = false;
+	try{ ok = document.execCommand('insertText', false, part); }catch(e){}
+	if(!ok){
+	  try{
+		var sel = window.getSelection();
+		if(sel && sel.rangeCount){
+		  var range = sel.getRangeAt(0);
+		  var tn = document.createTextNode(part);
+		  range.insertNode(tn);
+		  range.setStartAfter(tn); range.collapse(true);
+		  savedRange = range.cloneRange();
+		}
+	  }catch(e2){}
+	}
+	offset++;
+	$('#busySub').textContent = Math.round(offset / parts.length * 100) + '%';
+	requestAnimationFrame(function(){ setTimeout(step, 0); });
+  }
+  step();
+}
+function insertNodeAtSelection(node){
+  var sel = window.getSelection();
+  if(!sel || !sel.rangeCount){ $('#editor').appendChild(node); return; }
+  var range = sel.getRangeAt(0);
+  range.deleteContents(); range.insertNode(node); range.setStartAfter(node); range.collapse(true);
+}
+function insertFormatHtmlChunked(html){
+  var tmp = document.createElement('div'); tmp.innerHTML = html;
+  var bad = tmp.querySelectorAll('script,style,meta,link,iframe,object,embed');
+  for(var i=bad.length-1; i>=0; i--) bad[i].parentNode.removeChild(bad[i]);
+  var blocks = Array.prototype.slice.call(tmp.childNodes);
+  if(!blocks.length){ hideMask('pasteModal'); return; }
+  showBusy('正在插入内容…', '共 ' + blocks.length + ' 块');
+  var idx = 0;
+  function step(){
+	if(idx >= blocks.length){ hideBusy(); hideMask('pasteModal'); scheduleSave(); scheduleUpdateWordCount(true); toast('已插入'); return; }
+	var end = Math.min(idx+30, blocks.length);
+	var htmlPart = '';
+	for(var i=idx; i<end; i++){
+	  var n = blocks[i];
+	  if(n.nodeType === 1) htmlPart += n.outerHTML;
+	  else if(n.nodeType === 3) htmlPart += esc(n.textContent);
+	}
+	try{ $('#editor').focus(); document.execCommand('insertHTML', false, htmlPart); }catch(e){}
+	idx = end;
+	$('#busySub').textContent = Math.round(idx/blocks.length*100) + '%';
+	requestAnimationFrame(function(){ setTimeout(step, 0); });
+  }
+  step();
+}
+function onEditorCompositionStart(){ isComposing = true; }
+function onEditorCompositionEnd(){ isComposing = false; scheduleUpdateWordCount(); scheduleSave(); }
+function onEditorMouseup(){ saveSelection(); }
+function onEditorKeyup(){ saveSelection(); }
+
+var listenersAttached = false;
+function addEditorListeners(){
+  if(listenersAttached) return;
+  var ed = $('#editor');
+  ed.addEventListener('input', onEditorInput);
+  ed.addEventListener('blur', onEditorBlur);
+  ed.addEventListener('keydown', onEditorKeydown);
+  ed.addEventListener('paste', onEditorPaste);
+  ed.addEventListener('compositionstart', onEditorCompositionStart);
+  ed.addEventListener('compositionend', onEditorCompositionEnd);
+  ed.addEventListener('mouseup', onEditorMouseup);
+  ed.addEventListener('keyup', onEditorKeyup);
+  listenersAttached = true;
+}
+function removeEditorListeners(){
+  if(!listenersAttached) return false;
+  var ed = $('#editor');
+  ed.removeEventListener('input', onEditorInput);
+  ed.removeEventListener('blur', onEditorBlur);
+  ed.removeEventListener('keydown', onEditorKeydown);
+  ed.removeEventListener('paste', onEditorPaste);
+  ed.removeEventListener('compositionstart', onEditorCompositionStart);
+  ed.removeEventListener('compositionend', onEditorCompositionEnd);
+  ed.removeEventListener('mouseup', onEditorMouseup);
+  ed.removeEventListener('keyup', onEditorKeyup);
+  listenersAttached = false;
+  return true;
+}
+
+/* ---------- 工具栏 ---------- */
+function bindToolbar(){
+  $$('.tb-btn[data-cmd]').forEach(function(b){
+	b.onmousedown = function(ev){ ev.preventDefault(); };
+	b.onclick = function(){ exec(b.dataset.cmd); };
+  });
+  $('#blockFormat').onchange = function(){
+	var v = this.value;
+	$('#editor').focus();
+	try{ document.execCommand('formatBlock', false, v); }catch(e){}
+	this.value = 'p'; scheduleSave();
+  };
+  $('#fontColor').onmousedown = function(ev){ ev.preventDefault(); saveSelection(); };
+  $('#fontColor').oninput = function(){ exec('foreColor', this.value); };
+  (function(){
+	var btn = $('#fontsizeBtn'), pop = $('#fontsizePop'), label = $('#fontsizeLabel');
+	if(!btn || !pop) return;
+	function openPop(){ saveSelection(); pop.classList.add('show'); }
+	function closePop(){ pop.classList.remove('show'); }
+	btn.addEventListener('mousedown', function(ev){ ev.preventDefault(); });
+	btn.addEventListener('touchstart', function(ev){ ev.preventDefault(); saveSelection(); }, {passive:false});
+	btn.addEventListener('click', function(ev){ ev.stopPropagation(); if(pop.classList.contains('show')) closePop(); else openPop(); });
+	pop.addEventListener('click', function(ev){
+	  var b = ev.target.closest('button[data-size]'); if(!b) return;
+	  ev.stopPropagation();
+	  var sz = b.dataset.size;
+	  label.textContent = b.textContent.replace(/\s*\d+px\s*$/,'').trim();
+	  closePop(); applyFontSize(sz);
+	});
+	document.addEventListener('click', function(ev){ if(!pop.contains(ev.target) && !btn.contains(ev.target)) closePop(); });
+	document.addEventListener('touchstart', function(ev){ if(!pop.contains(ev.target) && !btn.contains(ev.target)) closePop(); }, {passive:true});
+  })();
+
+  /* 链接：保留双输入框 + 快捷方式 */
+  $('#btnLink').onmousedown = function(ev){ ev.preventDefault(); saveSelection(); };
+  $('#btnLink').onclick = function(){
+	$('#linkUrl').value = '';
+	$('#linkText').value = '';
+	showMask('linkModal');
+  };
+  $('#linkConfirm').onclick = function(){
+	var url = ($('#linkUrl').value || '').trim();
+	var text = ($('#linkText').value || '').trim();
+	if(!url){ toast('请输入链接地址'); return; }
+	if(!/^(https?:|mailto:|tel:|\/)/i.test(url)){
+	  if(/^[\w-]+(\.[\w-]+)+/.test(url)) url = 'https://' + url;
+	  else { toast('网址格式不正确'); return; }
+	}
+	var safeUrl = esc(url);
+	var safeText = text ? esc(text) : safeUrl;
+	hideMask('linkModal');
+	insertHtmlAtCursor('<a href="' + safeUrl + '" target="_blank" rel="noopener">' + safeText + '</a>');
+	toast('链接已插入');
+  };
+  document.addEventListener('keydown', function(ev){
+	if(!(ev.ctrlKey || ev.metaKey) || ev.key.toLowerCase() !== 'k') return;
+	var ed = $('#editor');
+	if(!ed) return;
+	var sel = window.getSelection();
+	if(!sel || sel.isCollapsed) return;
+	var r = sel.getRangeAt(0);
+	if(!ed.contains(r.commonAncestorContainer)) return;
+	ev.preventDefault();
+	var selectedText = sel.toString().trim();
+	var url = prompt('输入网址（选中文字："' + selectedText.slice(0, 30) + '"）', 'https://');
+	if(!url) return;
+	url = url.trim();
+	if(!/^(https?:|mailto:|tel:)/i.test(url)){
+	  if(/^[\w-]+(\.[\w-]+)+/.test(url)) url = 'https://' + url;
+	  else { toast('网址格式不正确'); return; }
+	}
+	var safeUrl = esc(url);
+	var safeText = esc(selectedText);
+	document.execCommand('insertHTML', false,
+	  '<a href="' + safeUrl + '" target="_blank" rel="noopener">' + safeText + '</a>');
+	scheduleSave(); scheduleUpdateWordCount();
+	toast('链接已插入');
+  });
+  document.addEventListener('paste', function(ev){
+	var t = ev.target;
+	if(!t || t.id !== 'editor') return;
+	var cd = ev.clipboardData; if(!cd) return;
+	var html = cd.getData('text/html');
+	if(html && html.trim()) return;
+	var text = cd.getData('text/plain');
+	if(!text) return;
+	var url = text.trim();
+	if(!/^https?:\/\/\S+$/i.test(url)) return;
+	if(url.length > 800) return;
+	ev.preventDefault();
+	document.execCommand('insertHTML', false,
+	  '<a href="' + esc(url) + '" target="_blank" rel="noopener">' + esc(url) + '</a>');
+	try{ t.dispatchEvent(new Event('input', { bubbles: true })); }catch(e){}
+	toast('已识别为网址，自动转为链接');
+  }, true);
+  document.addEventListener('click', function(ev){
+	var ed = document.getElementById('editor');
+	if(!ed || !ed.contains(ev.target)) return;
+	var a = ev.target.closest('a[href]');
+	if(!a) return;
+	var href = a.getAttribute('href') || '';
+	if(!/^(https?:|mailto:|tel:)/i.test(href)) return;
+	if(ev.altKey) return;
+	ev.preventDefault();
+	ev.stopPropagation();
+	try{ window.open(href, '_blank', 'noopener'); }catch(e){}
+  }, true);
+  document.addEventListener('mouseover', function(ev){
+	var ed = document.getElementById('editor');
+	if(!ed || !ed.contains(ev.target)) return;
+	var a = ev.target.closest('a[href]');
+	if(!a) return;
+	var href = a.getAttribute('href') || '';
+	if(!/^https?:/i.test(href)) return;
+	if(!a.title) a.title = '点击打开：' + href + '\nAlt + 点击可编辑';
+  });
+
+  /* 其他工具栏按钮 */
+  $('#btnImage').onmousedown = function(ev){ ev.preventDefault(); saveSelection(); };
+  $('#btnImage').onclick = function(){
+	$('#imgUrl').value=''; $('#imgFile').value='';
+	$('#imgPreview').classList.remove('show'); $('#imgPreviewEl').removeAttribute('src');
+	showMask('imageModal');
+  };
+  $('#imgUrl').oninput = function(){
+	var u = this.value.trim();
+	if(u){ $('#imgPreviewEl').src=u; $('#imgPreview').classList.add('show'); }
+	else { $('#imgPreview').classList.remove('show'); }
+  };
+  $('#imgFile').onchange = function(){
+	var f = this.files[0]; if(!f) return;
+	var fr = new FileReader();
+	fr.onload = function(e){ $('#imgPreviewEl').src=e.target.result; $('#imgPreview').classList.add('show'); $('#imgUrl').value=''; };
+	fr.readAsDataURL(f);
+  };
+  $('#imageConfirm').onclick = function(){
+	var file = $('#imgFile').files[0];
+	if(file){
+	  var fr = new FileReader();
+	  fr.onload = function(e){ hideMask('imageModal'); insertHtmlAtCursor('<img src="'+e.target.result+'" alt="">'); toast('图片已插入'); };
+	  fr.readAsDataURL(file); return;
+	}
+	var url = $('#imgUrl').value.trim();
+	if(!url){ toast('请粘贴图片地址或选择本地图片'); return; }
+	hideMask('imageModal'); insertHtmlAtCursor('<img src="'+esc(url)+'" alt="">'); toast('图片已插入');
+  };
+  $('#btnTable').onmousedown = function(ev){ ev.preventDefault(); saveSelection(); };
+  $('#btnTable').onclick = function(){ $('#tblRows').value=3; $('#tblCols').value=3; showMask('tableModal'); };
+  $('#tableConfirm').onclick = function(){
+	var rows = Math.max(1, Math.min(20, parseInt($('#tblRows').value,10)||3));
+	var cols = Math.max(1, Math.min(10, parseInt($('#tblCols').value,10)||3));
+	var h = '<table>';
+	for(var r=0;r<rows;r++){
+	  h += '<tr>';
+	  for(var cc=0;cc<cols;cc++) h += (r===0?'<th>表头</th>':'<td>内容</td>');
+	  h += '</tr>';
+	}
+	h += '</table><p><br></p>';
+	hideMask('tableModal'); insertHtmlAtCursor(h); toast('表格已插入');
+  };
+  $('#btnHr').onmousedown = function(ev){ ev.preventDefault(); saveSelection(); };
+  $('#btnHr').onclick = function(){
+	$('#editor').focus(); restoreSelection();
+	try{ document.execCommand('insertHTML', false, '<hr><p><br></p>'); }
+	catch(e){ insertHtmlAtCursor('<hr><p><br></p>'); }
+	scheduleSave();
+  };
+  $('#btnCode').onmousedown = function(ev){ ev.preventDefault(); saveSelection(); };
+  $('#btnCode').onclick = function(){
+	var sel = window.getSelection();
+	var t = sel ? sel.toString() : '';
+	if(t){ exec('insertHTML', '<code>'+esc(t)+'</code>'); }
+	else {
+	  insertHtmlAtCursor('<code>\u200b</code>');
+	  var ed = $('#editor');
+	  var codes = ed.querySelectorAll('code');
+	  var last = codes[codes.length-1];
+	  if(last && last.firstChild){
+		try{
+		  var range = document.createRange();
+		  range.setStart(last.firstChild, 0); range.collapse(true);
+		  var s = window.getSelection(); s.removeAllRanges(); s.addRange(range);
+		  savedRange = range.cloneRange();
+		}catch(e){}
+	  }
+	  toast('已插入代码标记，请在此输入');
+	}
+  };
+  $('#btnUndo').onmousedown = function(ev){ ev.preventDefault(); };
+  $('#btnUndo').onclick = function(){ var ed = $('#editor'); ed.focus(); try{ document.execCommand('undo', false, null); }catch(e){} scheduleSave(); scheduleUpdateWordCount(); };
+  $('#btnRedo').onmousedown = function(ev){ ev.preventDefault(); };
+  $('#btnRedo').onclick = function(){ var ed = $('#editor'); ed.focus(); try{ document.execCommand('redo', false, null); }catch(e){} scheduleSave(); scheduleUpdateWordCount(); };
+  $('#btnClear').onmousedown = function(ev){ ev.preventDefault(); };
+  $('#btnClear').onclick = function(){
+	appConfirm('清空当前章节', '将删除本章全部内容，此操作不可撤销。是否继续？', '清空', true).then(function(ok){
+	  if(!ok) return;
+	  var edEl = $('#editor');
+	  var wasListening = removeEditorListeners();
+	  edEl.innerHTML = '<p><br></p>';
+	  if(wasListening) addEditorListeners();
+	  try{
+		var range = document.createRange();
+		range.selectNodeContents(edEl); range.collapse(true);
+		var s = window.getSelection(); s.removeAllRanges(); s.addRange(range);
+		savedRange = range.cloneRange();
+	  }catch(e){}
+	  edEl.focus(); scheduleUpdateWordCount(true); scheduleSave(); toast('已清空本章');
+	});
+  };
+}
+
+/* ---------- 通用保存 ---------- */
+function isMobileBrowser(){ return /Android|iPhone|iPad|iPod|Mobile|HarmonyOS/i.test(navigator.userAgent); }
+function blobToBase64(blob){
+  return new Promise(function(resolve, reject){
+	var fr = new FileReader();
+	fr.onload = function(){
+	  var dataUrl = String(fr.result || '');
+	  var idx = dataUrl.indexOf(',');
+	  resolve(idx >= 0 ? dataUrl.slice(idx + 1) : dataUrl);
+	};
+	fr.onerror = function(){ reject(fr.error); };
+	fr.readAsDataURL(blob);
+  });
+}
+function blobToText(blob){
+  return new Promise(function(resolve, reject){
+	var fr = new FileReader();
+	fr.onload = function(){ resolve(String(fr.result || '')); };
+	fr.onerror = function(){ reject(fr.error); };
+	fr.readAsText(blob);
+  });
+}
+function tryNativeSave(filename, mime, blob){
+  return new Promise(function(resolve){
+	try{
+	  if(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Filesystem){
+		blobToBase64(blob).then(function(b64){
+		  var FS = window.Capacitor.Plugins.Filesystem;
+		  var dir = (FS.Directory || {}).Documents || 'DOCUMENTS';
+		  FS.writeFile({ path:filename, data:b64, directory:dir, recursive:true })
+			.then(function(){ resolve('ok'); }).catch(function(){ resolve('fail'); });
+		}); return;
+	  }
+	  if(window.ReactNativeWebView && window.ReactNativeWebView.postMessage){
+		blobToBase64(blob).then(function(b64){
+		  window.ReactNativeWebView.postMessage(JSON.stringify({ type:'saveFile', filename:filename, mime:mime, base64:b64 }));
+		  resolve('ok');
+		}); return;
+	  }
+	  if(window.Android && typeof window.Android.saveFile === 'function'){
+		blobToBase64(blob).then(function(b64){ try{ window.Android.saveFile(filename, mime, b64); resolve('ok'); }catch(e){ resolve('fail'); } }); return;
+	  }
+	  if(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.saveFile){
+		blobToBase64(blob).then(function(b64){
+		  try{ window.webkit.messageHandlers.saveFile.postMessage({ filename:filename, mime:mime, base64:b64 }); resolve('ok'); }
+		  catch(e){ resolve('fail'); }
+		}); return;
+	  }
+	}catch(e){ resolve('fail'); return; }
+	resolve('none');
+  });
+}
+function downloadBlob(content, filename, mime){
+  var blob = (content instanceof Blob) ? content : new Blob([content], { type: mime || 'application/octet-stream' });
+  tryNativeSave(filename, mime, blob).then(function(result){
+	if(result === 'ok'){ toast('已保存：' + filename); return; }
+	browserDownload(blob, filename, mime);
+  }).catch(function(){ browserDownload(blob, filename, mime); });
+}
+function browserDownload(blob, filename, mime){
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename; a.rel = 'noopener';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  var triggered = false;
+  try{ a.click(); triggered = true; }catch(e){}
+  setTimeout(function(){ try{ a.remove(); }catch(e){} }, 2000);
+  if(isMobileBrowser()){ showExportDone(filename, mime, blob); return; }
+  if(!triggered){ showExportDone(filename, mime, blob); }
+}
+function showExportDone(filename, mime, blob){
+  var modal = $('#exportDoneModal');
+  if(!modal){ toast('已生成：' + filename); return; }
+  var title = $('#exportDoneTitle'), hint = $('#exportDoneHint');
+  var preview = $('#exportDonePreview'), img = $('#exportDoneImg'), imgEl = $('#exportDoneImgEl');
+  var btnOpen = $('#exportDoneOpen'), btnCopy = $('#exportDoneCopy');
+  title.textContent = '导出：' + filename;
+  preview.style.display = 'none'; preview.textContent = '';
+  img.style.display = 'none'; imgEl.removeAttribute('src');
+  btnCopy.style.display = 'none'; btnOpen.style.display = 'inline-flex';
+  var isText = /^text\/|json|xml|javascript/i.test(mime || '');
+  var isImg = /^image\//i.test(mime || '');
+  var isEpub = /epub/i.test(mime || '');
+  if(isEpub){
+	hint.innerHTML = '当前环境不支持直接保存文件。<br>请把本页面在<b>电脑浏览器</b>中打开再导出 EPUB。';
+	btnOpen.style.display = 'none';
+  } else if(isText){
+	hint.innerHTML = '当前环境不支持直接保存文件。你可以：<br>1. 点 <b>「复制到剪贴板」</b>；<br>2. 点 <b>「在新标签打开」</b>。';
+	blobToText(blob).then(function(text){
+	  preview.textContent = text.length > 3000 ? text.slice(0, 3000) + '\n\n…（共 ' + text.length + ' 字符）' : text;
+	  preview.style.display = 'block';
+	});
+	btnCopy.style.display = 'inline-flex';
+  } else if(isImg){
+	hint.innerHTML = '长按下面的图片即可保存到相册。';
+	imgEl.src = URL.createObjectURL(blob); img.style.display = 'block';
+  } else {
+	hint.innerHTML = '点 <b>「在新标签打开」</b>。';
+  }
+  btnOpen.onclick = function(){
+	var u = URL.createObjectURL(blob);
+	var w = window.open(u, '_blank');
+	if(!w){ toast('浏览器阻止了新窗口，请允许弹窗后重试'); return; }
+	setTimeout(function(){ try{ URL.revokeObjectURL(u); }catch(e){} }, 300000);
+  };
+  btnCopy.onclick = function(){
+	blobToText(blob).then(function(text){
+	  copyToClipboard(text).then(function(ok){ toast(ok ? '已复制到剪贴板' : '复制失败，请长按文本手动复制'); });
+	});
+  };
+  showMask('exportDoneModal');
+}
+function copyToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+	return navigator.clipboard.writeText(text).then(function(){ return true; }).catch(function(){ return legacyCopy(text); });
+  }
+  return Promise.resolve(legacyCopy(text));
+}
+function legacyCopy(text){
+  try{
+	var ta = document.createElement('textarea');
+	ta.value = text; ta.style.position = 'fixed'; ta.style.top = '-9999px';
+	document.body.appendChild(ta); ta.focus(); ta.select();
+	var ok = document.execCommand('copy'); document.body.removeChild(ta);
+	return ok;
+  }catch(e){ return false; }
+}
+
+/* ---------- 顶部 ---------- */
+function bindTop(){
+  $('#btnNewChapterTop').onclick = function(){ addChapter(); };
+  $('#btnTOC').onclick = function(){ renderTOC(); showMask('tocModal'); };
+  $('#tocAddTop').onclick = function(){ addChapter(); renderTOC(); };
+  $('#btnAddChapter').onclick = function(){ addChapter(); };
+  $('#btnMoveUp').onclick = function(){ moveChapterBy(-1); };
+  $('#btnMoveDown').onclick = function(){ moveChapterBy(1); };
+  $('#bookTitle').oninput = function(){ state.book.title = this.value; scheduleSave(); };
+  $('#bookAuthor').oninput = function(){ state.book.author = this.value; scheduleSave(); };
+  $('#bookLang').onchange = function(){ state.book.lang = this.value; scheduleSave(); };
+  $('#btnMeta').onclick = function(){
+	$('#mTitle').value = state.book.title;
+	$('#mAuthor').value = state.book.author;
+	$('#mDesc').value = state.book.desc || '';
+	$('#mPublisher').value = state.book.publisher || '';
+	$('#mLang').value = state.book.lang || 'zh-CN';
+	showMask('metaModal');
+  };
+  $('#mSave').onclick = function(){
+	state.book.title = $('#mTitle').value || '我的电子书';
+	state.book.author = $('#mAuthor').value || '佚名';
+	state.book.desc = $('#mDesc').value;
+	state.book.publisher = $('#mPublisher').value;
+	state.book.lang = $('#mLang').value;
+	$('#bookTitle').value = state.book.title;
+	$('#bookAuthor').value = state.book.author;
+	$('#bookLang').value = state.book.lang;
+	hideMask('metaModal'); scheduleSave(); toast('书籍信息已更新');
+  };
+  $('#btnNew').onclick = function(){
+	appConfirm('新建空白书', '新建一本空白书？<b>当前内容会丢失</b>（除非你已导出备份）。', '新建', true).then(function(ok){
+	  if(!ok) return;
+	  state.book = { title:'我的电子书', author:'佚名', desc:'', publisher:'', lang:'zh-CN', cover:null };
+	  state.chapters = []; state.activeId = null;
+	  $('#bookTitle').value = state.book.title;
+	  $('#bookAuthor').value = ''; $('#bookLang').value = 'zh-CN';
+	  addChapter({ title:'第一章', html:'<p><br></p>' });
+	  toast('已新建空白书');
+	});
+  };
+  $('#btnExport').onclick = function(){
+	flushEditor();
+	$('#exportName').value = state.book.title || '我的电子书';
+	showMask('exportModal');
+  };
+  $$('.fmt-card').forEach(function(card){
+	card.onclick = function(){
+	  var fmt = this.dataset.fmt;
+	  var customName = ($('#exportName').value || '').trim();
+	  if(customName) state.book.title = customName;
+	  hideMask('exportModal');
+	  $('#bookTitle').value = state.book.title;
+	  scheduleSave();
+	  exportAs(fmt, customName);
+	};
+  });
+  $('#btnImport').onclick = function(){ $('#fileInput').click(); };
+  $('#fileInput').onchange = function(ev){ handleImport(ev.target.files[0]); ev.target.value=''; };
+  $$('[data-close]').forEach(function(b){ b.onclick = function(){ hideMask(b.dataset.close); }; });
+  $$('.modal-mask').forEach(function(m){ m.onclick = function(ev){ if(ev.target===m) m.classList.remove('show'); }; });
+  $('#linkUrl').addEventListener('keydown', function(ev){ if(ev.key==='Enter') $('#linkConfirm').click(); });
+  $('#linkText').addEventListener('keydown', function(ev){ if(ev.key==='Enter') $('#linkConfirm').click(); });
+  $('#imgUrl').addEventListener('keydown', function(ev){ if(ev.key==='Enter') $('#imageConfirm').click(); });
+  $('#tblRows').addEventListener('keydown', function(ev){ if(ev.key==='Enter') $('#tableConfirm').click(); });
+  $('#tblCols').addEventListener('keydown', function(ev){ if(ev.key==='Enter') $('#tableConfirm').click(); });
+  bindCoverModal();
+  bindChapterListEvents();
+  bindTabbarEvents();
+  bindTocEvents();
+  bindPasteModalEvents();
+}
+
+function bindChapterListEvents(){
+  var box = $('#chapterList'); if(!box || box._bound) return; box._bound = true;
+  box.addEventListener('click', function(ev){
+	var row = ev.target.closest('.chapter'); if(!row) return;
+	var id = row.dataset.id;
+	var action = ev.target.dataset.action || 'switch';
+	var c = getChapter(id); if(!c) return;
+	if(action === 'delete'){ ev.preventDefault(); ev.stopPropagation(); deleteChapter(id); return; }
+	if(action === 'rename'){ ev.stopPropagation(); startRename(row.querySelector('.ct'), c); return; }
+	if(id !== state.activeId) switchToChapter(id);
+  });
+  box.addEventListener('dblclick', function(ev){
+	var ct = ev.target.closest('.ct'); if(!ct) return;
+	var row = ct.closest('.chapter'); var c = getChapter(row.dataset.id);
+	if(c) startRename(ct, c);
+  });
+}
+function bindTabbarEvents(){
+  var bar = $('#tabbar'); if(!bar || bar._bound) return; bar._bound = true;
+  bar.addEventListener('click', function(ev){
+	var add = ev.target.closest('.tab-add');
+	if(add){ ev.stopPropagation(); addChapter(); return; }
+	var tab = ev.target.closest('.tab'); if(!tab) return;
+	var id = tab.dataset.id;
+	var action = ev.target.dataset.action || 'switch';
+	var c = getChapter(id); if(!c) return;
+	if(action === 'delete'){ ev.preventDefault(); ev.stopPropagation(); deleteChapter(id); return; }
+	if(id !== state.activeId) switchToChapter(id);
+	else { var scroll = $('#editorScroll'); if(scroll) scroll.scrollTop = 0; }
+  });
+  var pressTimer = null;
+  bar.addEventListener('touchstart', function(ev){
+	var tab = ev.target.closest('.tab'); if(!tab) return;
+	pressTimer = setTimeout(function(){
+	  pressTimer = null;
+	  var c = getChapter(tab.dataset.id);
+	  if(c) openCtxMenu(tab, c);
+	}, 550);
+  }, {passive:true});
+  bar.addEventListener('touchend', function(){ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
+  bar.addEventListener('touchmove', function(){ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
+  bar.addEventListener('contextmenu', function(ev){
+	var tab = ev.target.closest('.tab'); if(!tab) return;
+	ev.preventDefault();
+	var c = getChapter(tab.dataset.id);
+	if(c) openCtxMenu(tab, c);
+  });
+}
+function bindTocEvents(){
+  var list = $('#tocList'); if(!list || list._bound) return; list._bound = true;
+  list.addEventListener('click', function(ev){
+	var row = ev.target.closest('.toc-row'); if(!row) return;
+	var id = row.dataset.id;
+	var action = ev.target.dataset.action || 'switch';
+	var c = getChapter(id); if(!c) return;
+	var i = state.chapters.findIndex(function(x){ return x.id===id; });
+	if(action === 'delete'){ ev.preventDefault(); ev.stopPropagation(); deleteChapter(id); return; }
+	if(action === 'rename'){ ev.stopPropagation(); startTocRename(row, c); return; }
+	if(action === 'up'){ ev.stopPropagation(); if(i>0) moveChapter(c.id, state.chapters[i-1].id); return; }
+	if(action === 'down'){ ev.stopPropagation(); if(i<state.chapters.length-1) moveChapter(c.id, state.chapters[i+1].id); return; }
+	switchToChapter(id); hideMask('tocModal');
+  });
+  list.addEventListener('dblclick', function(ev){
+	var label = ev.target.closest('.tlabel'); if(!label) return;
+	var row = label.closest('.toc-row'); var c = getChapter(row.dataset.id);
+	if(c) startTocRename(row, c);
+  });
+}
+function bindPasteModalEvents(){
+  var p = $('#pastePlain'), f = $('#pasteFormat');
+  if(p && !p._bound){
+	p._bound = true;
+	p.onclick = function(){
+	  if(!pendingPaste) return;
+	  var text = pendingPaste.text || stripTags(pendingPaste.html);
+	  hideMask('pasteModal'); insertPlainTextChunk(text); pendingPaste = null;
+	};
+  }
+  if(f && !f._bound){
+	f._bound = true;
+	f.onclick = function(){
+	  if(!pendingPaste) return;
+	  var html = pendingPaste.html;
+	  hideMask('pasteModal'); insertFormatHtmlChunked(html); pendingPaste = null;
+	};
+  }
+}
+
+/* ---------- 封面 ---------- */
+var COVER_GRADS = [
+  ['#4a7dff','#2f6fed'], ['#12a06a','#0d8a5c'], ['#e5484d','#c9343a'],
+  ['#f5a623','#e0881c'], ['#7c4dff','#6535e6'], ['#00897b','#00796b'],
+  ['#37474f','#263238'], ['#d84315','#bf360c']
+];
+var curCover = { type:'grad', idx:0 };
+function breakCn(s, n){ var out=[]; for(var i=0;i<s.length;i+=n) out.push(s.substr(i,n)); return out.length?out:['']; }
+function buildCoverSVG(g, title, author){
+  var g0 = COVER_GRADS[g.idx][0], g1 = COVER_GRADS[g.idx][1];
+  var rawTitle = String(title||'我的电子书');
+  var lines = rawTitle.length > 12 ? breakCn(rawTitle, 10) : [rawTitle];
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" width="600" height="800">'
+	+ '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+	+ '<stop offset="0" stop-color="'+g0+'"/><stop offset="1" stop-color="'+g1+'"/></linearGradient></defs>'
+	+ '<rect width="600" height="800" fill="url(#g)"/>'
+	+ '<circle cx="470" cy="130" r="160" fill="#ffffff" fill-opacity="0.12"/>'
+	+ '<circle cx="110" cy="700" r="110" fill="#ffffff" fill-opacity="0.10"/>'
+	+ '<text x="60" y="360" font-family="sans-serif" font-size="52" fill="#ffffff" font-weight="700">'
+	+ lines.map(function(l,i){ return '<tspan x="60" dy="'+(i===0?'0':'70')+'">'+esc(l)+'</tspan>'; }).join('')
+	+ '</text>'
+	+ '<line x1="60" y1="400" x2="220" y2="400" stroke="#ffffff" stroke-opacity="0.7" stroke-width="3"/>'
+	+ '<text x="60" y="720" font-family="sans-serif" font-size="26" fill="#ffffff" fill-opacity="0.9">'+esc(author||'佚名')+'</text>'
+	+ '</svg>';
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+function bindCoverModal(){
+  var box = $('#coverPick'); box.innerHTML='';
+  COVER_GRADS.forEach(function(g,i){
+	var o = el('div','opt');
+	o.style.background = 'linear-gradient(135deg,'+g[0]+','+g[1]+')';
+	o.appendChild(el('span',null,'封面 '+ (i+1)));
+	o.onclick = function(){
+	  $$('.opt', box).forEach(function(x){ x.classList.remove('active'); });
+	  o.classList.add('active'); curCover = { type:'grad', idx:i };
+	};
+	if(i===0) o.classList.add('active');
+	box.appendChild(o);
+  });
+  $('#btnCover').onclick = function(){
+	curCover = state.book.cover || { type:'grad', idx:0 };
+	$$('.opt', box).forEach(function(x,i){ x.classList.toggle('active', curCover.type==='grad' && i===curCover.idx); });
+	showMask('coverModal');
+  };
+  $('#coverFile').onchange = function(ev){
+	var f = ev.target.files[0]; if(!f) return;
+	var fr = new FileReader();
+	fr.onload = function(e){
+	  curCover = { type:'custom', data: e.target.result };
+	  $$('.opt', box).forEach(function(x){ x.classList.remove('active'); });
+	  toast('已选择自定义封面图片');
+	};
+	fr.readAsDataURL(f);
+  };
+  $('#coverSave').onclick = function(){
+	state.book.cover = curCover;
+	hideMask('coverModal'); scheduleSave(); toast('封面已设置');
+  };
+}
+function getCoverDataURL(cb){
+  var cov = state.book.cover;
+  if(!cov){ cb(''); return; }
+  if(cov.type==='custom' && cov.data){ cb(cov.data); return; }
+  cb(buildCoverSVG(cov.type==='grad'?cov:{type:'grad',idx:0}, state.book.title, state.book.author));
+}
+
+/* ---------- 导出 ---------- */
+function safeName(s){ return (s||'电子书').replace(/[\\/:*?"<>|]/g,'_').slice(0,60) || '电子书'; }
+function styleCss(){
+  return '@charset "UTF-8";\n'
+	+ 'body{font-family:"PingFang SC","Microsoft YaHei",sans-serif;line-height:1.9;color:#222;margin:0;padding:0 8%;}\n'
+	+ 'h1{font-size:1.6em;text-align:center;margin:2.5em 0 1.5em;}\n'
+	+ 'h2{font-size:1.25em;margin-top:1.6em;} h3{font-size:1.1em;margin-top:1.4em;}\n'
+	+ 'blockquote{margin:1em 0;padding:.4em 1em;border-left:3px solid #2f6fed;background:#f7f9fc;color:#555;}\n'
+	+ 'pre{background:#1f2430;color:#e6e8eb;padding:1em;border-radius:6px;overflow-x:auto;font-size:.9em;}\n'
+	+ 'code{background:#eef1f5;padding:1px 4px;border-radius:3px;}\n'
+	+ 'pre code{background:none;padding:0;}\n'
+	+ 'a{color:#2f6fed;text-decoration:underline;}\n'
+	+ 'img{max-width:100%;height:auto;}\n'
+	+ 'table{border-collapse:collapse;width:100%;margin:1em 0;} td,th{border:1px solid #ddd;padding:.5em;}\n'
+	+ 'hr{border:none;border-top:1px solid #eee;margin:2em 0;}\n';
+}
+function buildChapterXhtml(c){
+  var body = (c.html||'').replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,'');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'
+	+ '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">'
+	+ '<head><meta charset="utf-8"/><title>'+esc(c.title)+'</title>'
+	+ '<link rel="stylesheet" type="text/css" href="style.css"/></head><body>'
+	+ body + '</body></html>';
+}
+function buildNavDoc(){
+  var items = state.chapters.map(function(c,i){ return '<li><a href="ch'+i+'.xhtml">'+esc(c.title)+'</a></li>'; }).join('');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'
+	+ '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">'
+	+ '<head><meta charset="utf-8"/><title>目录</title></head><body>'
+	+ '<nav epub:type="toc" id="toc"><h1>目录</h1><ol>'+items+'</ol></nav></body></html>';
+}
+function buildCoverXhtml(hasCoverImage){
+  var inner;
+  if(hasCoverImage) inner = '<img src="cover.jpg" alt="cover"/>';
+  else {
+	var g = (state.book.cover && state.book.cover.type==='grad') ? state.book.cover.idx : 0;
+	var g0 = COVER_GRADS[g][0], g1 = COVER_GRADS[g][1];
+	inner = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100vh">'
+	  + '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+g0+'"/><stop offset="1" stop-color="'+g1+'"/></linearGradient></defs>'
+	  + '<rect width="600" height="800" fill="url(#g)"/>'
+	  + '<text x="60" y="400" font-family="sans-serif" font-size="48" fill="#fff" font-weight="700">'+esc(state.book.title)+'</text>'
+	  + '<text x="60" y="720" font-family="sans-serif" font-size="26" fill="#fff" fill-opacity="0.9">'+esc(state.book.author||'佚名')+'</text>'
+	  + '</svg>';
+  }
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'
+	+ '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">'
+	+ '<head><meta charset="utf-8"/><title>封面</title><style>'
+	+ 'body{margin:0;padding:0;} img{width:100%;height:100vh;object-fit:cover;display:block;}'
+	+ '</style></head><body>' + inner + '</body></html>';
+}
+function containerXml(hasCoverImage, imageItems){
+  var manifest = '<item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>'
+	+ '<item id="css" href="style.css" media-type="text/css"/>'
+	+ '<item id="cover" href="cover.xhtml" media-type="application/xhtml+xml"/>'
+	+ (hasCoverImage ? '<item id="coverimg" href="cover.jpg" media-type="image/jpeg" properties="cover-image"/>' : '')
+	+ (imageItems||[]).map(function(it){ return '<item id="'+it.id+'" href="'+it.href+'" media-type="'+it.mime+'"/>'; }).join('')
+	+ state.chapters.map(function(c,i){ return '<item id="ch'+i+'" href="ch'+i+'.xhtml" media-type="application/xhtml+xml"/>'; }).join('');
+  var spine = '<itemref idref="cover" linear="no"/><itemref idref="nav"/>'
+	+ state.chapters.map(function(c,i){ return '<itemref idref="ch'+i+'"/>'; }).join('');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'
+	+ '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="bookid" xml:lang="'+(state.book.lang||'zh-CN')+'">'
+	+ '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">'
+	+ '<dc:identifier id="bookid">urn:uuid:'+uid()+uid()+'</dc:identifier>'
+	+ '<dc:title>'+esc(state.book.title)+'</dc:title>'
+	+ '<dc:creator>'+esc(state.book.author)+'</dc:creator>'
+	+ '<dc:language>'+(state.book.lang||'zh-CN')+'</dc:language>'
+	+ (state.book.desc?'<dc:description>'+esc(state.book.desc)+'</dc:description>':'')
+	+ (state.book.publisher?'<dc:publisher>'+esc(state.book.publisher)+'</dc:publisher>':'')
+	+ '<meta property="dcterms:modified">'+new Date().toISOString().slice(0,10)+'</meta>'
+	+ '</metadata><manifest>'+manifest+'</manifest><spine>'+spine+'</spine></package>';
+}
+
+function exportAs(fmt, customName){
+  flushEditor();
+  var name = safeName(customName || state.book.title);
+  if(fmt==='txt'){
+	var txt = state.chapters.map(function(c){ return '【'+c.title+'】\n\n'+plainText(c.html) + '\n'; }).join('\n');
+	downloadBlob(txt, name+'.txt', 'text/plain;charset=utf-8'); toast('已导出 '+name+'.txt'); return;
+  }
+  if(fmt==='pdf'){ exportPdf(name); return; }
+  if(fmt==='html'){
+	var coverHTML = '';
+	if(state.book.cover && state.book.cover.type==='grad'){
+	  var g = COVER_GRADS[state.book.cover.idx] || COVER_GRADS[0];
+	  coverHTML = '<section class="book-cover" style="background:linear-gradient(135deg,'+g[0]+','+g[1]+');height:100vh;display:flex;flex-direction:column;justify-content:center;padding:10%;color:#fff;box-sizing:border-box">'
+		+ '<h1 style="font-size:3em;margin:0">'+esc(state.book.title)+'</h1>'
+		+ '<p style="font-size:1.4em;opacity:.9;margin-top:1em">'+esc(state.book.author)+'</p></section>';
+	} else if(state.book.cover && state.book.cover.type==='custom' && state.book.cover.data){
+	  coverHTML = '<section class="book-cover" style="height:100vh;display:flex;align-items:center;justify-content:center;background:#111">'
+		+ '<img src="'+state.book.cover.data+'" alt="cover" style="max-width:100%;max-height:100%;object-fit:contain"></section>';
+	}
+	var body = state.chapters.map(function(c){ return '<article class="chapter"><h2>'+esc(c.title)+'</h2>'+c.html+'</article>'; }).join('\n');
+	var html = '<!DOCTYPE html><html lang="'+(state.book.lang||'zh-CN')+'"><head><meta charset="utf-8">'
+	  + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+	  + '<title>'+esc(state.book.title)+'</title>'
+	  + '<style>body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;max-width:760px;margin:0 auto;padding:24px 20px;line-height:1.9;color:#222}'
+	  + '.chapter{margin-bottom:3em}h2{font-size:1.6em;text-align:center;margin:1.5em 0}'
+	  + 'blockquote{border-left:3px solid #2f6fed;background:#f7f9fc;padding:.4em 1em;margin:1em 0}'
+	  + 'pre{background:#1f2430;color:#e6e8eb;padding:1em;border-radius:6px;overflow-x:auto}code{background:#eef1f5;padding:1px 4px;border-radius:3px}pre code{background:none;padding:0}'
+	  + 'a{color:#2f6fed;text-decoration:underline}img{max-width:100%}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:.5em}</style>'
+	  + '</head><body>'+coverHTML+body+'</body></html>';
+	downloadBlob(html, name+'.html', 'text/html;charset=utf-8'); toast('已导出 '+name+'.html'); return;
+  }
+  if(fmt==='json'){
+	flushEditor();
+	var json = JSON.stringify({ book:state.book, chapters:state.chapters, activeId:state.activeId }, null, 2);
+	downloadBlob(json, name+'.book.json', 'application/json;charset=utf-8'); toast('已导出 '+name+'.book.json'); return;
+  }
+  if(fmt==='epub') exportEpub(name);
+}
+
+function exportPdf(name){
+  flushEditor();
+  var win = window.open('', '_blank');
+  if(!win){ alert('浏览器拦截了新窗口，请允许弹出窗口后重试'); return; }
+  var coverHTML = '';
+  if(state.book.cover && state.book.cover.type==='grad'){
+	var g = COVER_GRADS[state.book.cover.idx] || COVER_GRADS[0];
+	coverHTML = '<section style="background:linear-gradient(135deg,'+g[0]+','+g[1]+');height:100vh;display:flex;flex-direction:column;justify-content:center;padding:10%;color:#fff;box-sizing:border-box;page-break-after:always">'
+	  + '<h1 style="font-size:3em;margin:0">'+esc(state.book.title)+'</h1>'
+	  + '<p style="font-size:1.4em;opacity:.9;margin-top:1em">'+esc(state.book.author)+'</p></section>';
+  } else if(state.book.cover && state.book.cover.type==='custom' && state.book.cover.data){
+	coverHTML = '<section style="height:100vh;display:flex;align-items:center;justify-content:center;background:#111;page-break-after:always">'
+	  + '<img src="'+state.book.cover.data+'" alt="cover" style="max-width:100%;max-height:100%;object-fit:contain"></section>';
+  }
+  var body = state.chapters.map(function(c){ return '<article><h2 class="chapter-print-title">'+esc(c.title)+'</h2>'+c.html+'</article>'; }).join('\n');
+  win.document.write('<!DOCTYPE html><html lang="'+(state.book.lang||'zh-CN')+'"><head><meta charset="utf-8">'
+	+ '<title>'+esc(name)+'</title><style>'
+	+ '@page{size:A4;margin:18mm 16mm}'
+	+ 'body{font-family:"PingFang SC","Microsoft YaHei",-apple-system,sans-serif;line-height:1.85;color:#222;margin:0}'
+	+ 'h1,h2,h3{line-height:1.4;page-break-after:avoid}'
+	+ 'blockquote{margin:1em 0;padding:.4em 1em;border-left:3px solid #2f6fed;background:#f7f9fc;color:#444}'
+	+ 'pre{background:#f2f4f7;color:#1f2430;padding:1em;border-radius:6px;white-space:pre-wrap;word-wrap:break-word;page-break-inside:avoid}'
+	+ 'code{background:#eef1f5;padding:1px 4px;border-radius:3px}pre code{background:none;padding:0}'
+	+ 'a{color:#2f6fed;text-decoration:underline}img{max-width:100%;height:auto;page-break-inside:avoid}'
+	+ 'table{border-collapse:collapse;width:100%;page-break-inside:avoid}td,th{border:1px solid #ccc;padding:.5em}'
+	+ '.chapter-print-title{font-size:1.5em;text-align:center;margin:1em 0;page-break-before:always}'
+	+ '.chapter-print-title:first-child{page-break-before:auto}'
+	+ '</style></head><body>'+coverHTML+body+'</body></html>');
+  win.document.close(); win.focus();
+  setTimeout(function(){ try{ win.print(); }catch(e){} }, 400);
+}
+
+function exportEpub(name){
+  flushEditor();
+  getCoverDataURL(function(cdata){
+	var isCustom = !!(state.book.cover && state.book.cover.type==='custom' && cdata && /^data:image\//.test(cdata));
+	collectImages(function(imageResults){
+	  var zip = new MiniZip();
+	  zip.file('mimetype', 'application/epub+zip');
+	  zip.file('META-INF/container.xml', '<?xml version="1.0" encoding="UTF-8"?>\n'
+		+ '<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">'
+		+ '<rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+	  zip.file('OEBPS/style.css', styleCss());
+	  zip.file('OEBPS/nav.xhtml', buildNavDoc());
+	  zip.file('OEBPS/cover.xhtml', buildCoverXhtml(isCustom));
+	  if(isCustom){
+		var m = cdata.match(/^data:image\/(\w+);base64,(.+)$/);
+		if(m) zip.file('OEBPS/cover.jpg', m[2], { base64:true });
+	  }
+	  state.chapters.forEach(function(c,i){
+		var html = (c.html||'');
+		imageResults.forEach(function(r){ html = html.split(r.original).join(r.localPath); });
+		zip.file('OEBPS/ch'+i+'.xhtml', buildChapterXhtml({ title:c.title, html: html }));
+	  });
+	  var imageItems = [];
+	  imageResults.forEach(function(r){
+		if(r.localPath && r.base64){
+		  zip.file('OEBPS/images/'+r.filename, r.base64, { base64:true });
+		  imageItems.push({ id:r.id, href:'images/'+r.filename, mime:r.mime });
+		}
+	  });
+	  zip.file('OEBPS/content.opf', containerXml(isCustom, imageItems));
+	  zip.generateAsync({ type:'blob', mimeType:'application/epub+zip' })
+		.then(function(blob){
+		  downloadBlob(blob, name+'.epub', 'application/epub+zip');
+		  var n = imageResults.filter(function(r){return r.base64;}).length;
+		  toast('已导出 '+name+'.epub' + (n?('（含 '+n+' 张图片）'):''));
+		})
+		.catch(function(e){ alert('打包失败：'+(e && e.message ? e.message : e)); });
+	});
+  });
+}
+
+function collectImages(cb){
+  var urls = {};
+  state.chapters.forEach(function(c){
+	var d = document.createElement('div'); d.innerHTML = c.html || '';
+	d.querySelectorAll('img').forEach(function(img){
+	  var src = img.getAttribute('src');
+	  if(src) urls[src] = true;
+	});
+  });
+  var list = Object.keys(urls);
+  if(!list.length){ cb([]); return; }
+  var results = [], done = 0;
+  list.forEach(function(src){
+	if(/^data:image\//.test(src)){
+	  var m = src.match(/^data:image\/(\w+);base64,(.+)$/);
+	  if(m){
+		var ext = m[1]==='jpeg'?'jpg':m[1];
+		results.push({ original:src, filename:'img_'+Math.random().toString(36).slice(2,8)+'.'+ext, localPath:'', base64:m[2], mime:'image/'+m[1], id:'img'+Math.random().toString(36).slice(2,8) });
+	  }
+	  if(++done >= list.length) finish(); return;
+	}
+	if(/^https?:\/\//i.test(src)){
+	  fetch(src, { mode:'cors' })
+		.then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.blob(); })
+		.then(function(blob){
+		  return new Promise(function(res){
+			var fr = new FileReader();
+			fr.onload = function(){
+			  var m = fr.result.match(/^data:image\/(\w+);base64,(.+)$/);
+			  if(m){
+				var ext = m[1]==='jpeg'?'jpg':m[1];
+				results.push({ original:src, filename:'img_'+Math.random().toString(36).slice(2,8)+'.'+ext, localPath:'', base64:m[2], mime:'image/'+m[1], id:'img'+Math.random().toString(36).slice(2,8) });
+			  }
+			  res();
+			};
+			fr.readAsDataURL(blob);
+		  });
+		})
+		.catch(function(){})
+		.then(function(){ if(++done >= list.length) finish(); });
+	  return;
+	}
+	if(++done >= list.length) finish();
+  });
+  function finish(){
+	results.forEach(function(r){ r.localPath = 'images/' + r.filename; });
+	cb(results);
+  }
+}
+
+/* ---------- 导入 ---------- */
+function handleImport(file){
+  if(!file) return;
+  var name = file.name.toLowerCase();
+  if(name.endsWith('.epub')) importEpub(file);
+  else if(name.endsWith('.html')||name.endsWith('.htm')) importHtml(file);
+  else if(name.endsWith('.md')) importMarkdown(file);
+  else if(name.endsWith('.txt')) importTxt(file);
+  else if(name.endsWith('.json')) importJson(file);
+  else alert('暂不支持该格式，可导入 EPUB / HTML / TXT / MD / JSON 工程文件');
+}
+function countChars(chapters){
+  var n = 0;
+  chapters.forEach(function(c){ var d = document.createElement('div'); d.innerHTML = c.html || ''; n += (d.textContent || '').length; });
+  return n;
+}
+function applyImported(title, chapters, bookMeta){
+  var edEl = $('#editor');
+  var wasListening = removeEditorListeners();
+  edEl.innerHTML = '';
+  if(wasListening) addEditorListeners();
+  if(bookMeta) state.book = Object.assign({}, state.book, bookMeta);
+  if(title) state.book.title = title;
+  state.chapters = chapters.map(function(c){ return { id:c.id || uid(), title: c.title || '未命名', html: c.html || '' }; });
+  if(!state.chapters.length) state.chapters = [{ id:uid(), title:'第一章', html:'<p><br></p>' }];
+  state.activeId = state.chapters[0].id;
+  $('#bookTitle').value = state.book.title || '我的电子书';
+  $('#bookAuthor').value = state.book.author || '';
+  $('#bookLang').value = state.book.lang || 'zh-CN';
+  document.title = (state.book.title||'电子书') + ' · 电子书编辑器';
+  switchToChapter(state.activeId, true);
+  scheduleSave();
+}
+function importTxt(file){
+  var r = new FileReader();
+  r.onload = function(e){
+	try{
+	  var text = String(e.target.result || '');
+	  var lines = text.split(/\r\n?|\n/);
+	  var html = '<pre style="white-space:pre-wrap;font-family:inherit;background:none;color:inherit;padding:0">' + esc(lines.join('\n')) + '</pre>';
+	  var title = file.name.replace(/\.[^.]+$/,'') || '导入的书';
+	  applyImported(title, [{ title:'全文', html: html }]);
+	  toast('已导入 TXT（' + text.length + ' 字符），可继续编辑');
+	}catch(err){ alert('TXT 导入失败：'+err.message); }
+  };
+  r.onerror = function(){ alert('读取文件失败'); };
+  r.readAsText(file, 'utf-8');
+}
+function importMarkdown(file){
+  var r = new FileReader();
+  r.onload = function(e){
+	try{
+	  var md = String(e.target.result || '');
+	  var title = file.name.replace(/\.[^.]+$/,'') || '导入的书';
+	  applyImported(title, [{ title:'全文', html: markdownToHtml(md) }]);
+	  toast('已导入 Markdown（' + md.length + ' 字符），可继续编辑');
+	}catch(err){ alert('Markdown 导入失败：'+err.message); }
+  };
+  r.onerror = function(){ alert('读取文件失败'); };
+  r.readAsText(file, 'utf-8');
+}
+function markdownToHtml(md){
+  var lines = md.replace(/\r\n?/g,'\n').split('\n');
+  var out = [], inCode = false, inUl = false, inOl = false, para = [];
+  function flushPara(){ if(para.length){ out.push('<p>'+ inlineMd(para.join('<br>')) +'</p>'); para = []; } }
+  function closeList(){ if(inUl){ out.push('</ul>'); inUl=false; } if(inOl){ out.push('</ol>'); inOl=false; } }
+  lines.forEach(function(line){
+	if(/^```/.test(line)){
+	  flushPara(); closeList();
+	  if(!inCode){ out.push('<pre><code>'); inCode=true; } else { out.push('</code></pre>'); inCode=false; }
+	  return;
+	}
+	if(inCode){ out.push(esc(line)); return; }
+	var h = line.match(/^(#{1,6})\s+(.*)$/);
+	if(h){ flushPara(); closeList(); var lv = Math.min(h[1].length,3); out.push('<h'+lv+'>'+inlineMd(h[2])+'</h'+lv+'>'); return; }
+	if(/^---+$/.test(line)){ flushPara(); closeList(); out.push('<hr>'); return; }
+	if(/^>\s?/.test(line)){ flushPara(); closeList(); out.push('<blockquote>'+inlineMd(line.replace(/^>\s?/,''))+'</blockquote>'); return; }
+	var ul = line.match(/^\s*[-*+]\s+(.*)$/);
+	if(ul){ flushPara(); if(!inUl){ closeList(); out.push('<ul>'); inUl=true; } out.push('<li>'+inlineMd(ul[1])+'</li>'); return; }
+	var ol = line.match(/^\s*\d+\.\s+(.*)$/);
+	if(ol){ flushPara(); if(!inOl){ closeList(); out.push('<ol>'); inOl=true; } out.push('<li>'+inlineMd(ol[1])+'</li>'); return; }
+	if(!line.trim()){ flushPara(); closeList(); return; }
+	para.push(line);
+  });
+  flushPara(); closeList();
+  if(inCode) out.push('</code></pre>');
+  return out.join('\n');
+}
+function inlineMd(s){
+  s = esc(s);
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  s = s.replace(/_([^_]+)_/g, '<em>$1</em>');
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2">$1</a>');
+  return s;
+}
+function importHtml(file){
+  var r = new FileReader();
+  r.onload = function(e){
+	try{
+	  var raw = String(e.target.result || '');
+	  var parser = new DOMParser();
+	  var doc = parser.parseFromString(raw, 'text/html');
+	  var title = (doc.querySelector('title') && doc.querySelector('title').textContent.trim()) || file.name.replace(/\.[^.]+$/,'');
+	  var body = doc.body || doc.documentElement;
+	  var bad = body.querySelectorAll('script,style,meta,link,iframe,object,embed');
+	  for(var i=bad.length-1; i>=0; i--) bad[i].parentNode.removeChild(bad[i]);
+	  var articles = body.querySelectorAll('article.chapter');
+	  var chapters = [];
+	  if(articles.length){
+		articles.forEach(function(a, idx){
+		  var h2 = a.querySelector('h2');
+		  var t = h2 ? h2.textContent.trim() : ('第 ' + (idx+1) + ' 章');
+		  var clone = a.cloneNode(true);
+		  var ch2 = clone.querySelector('h2'); if(ch2) ch2.remove();
+		  chapters.push({ title: t, html: clone.innerHTML });
+		});
+	  } else {
+		chapters.push({ title: title || '第一章', html: body.innerHTML });
+	  }
+	  var coverSec = body.querySelector('.book-cover');
+	  var bookMeta = { title: title };
+	  if(coverSec){
+		var bg = coverSec.getAttribute('style') || '';
+		var m = bg.match(/linear-gradient\([^)]*#([0-9a-f]{6})[^)]*#([0-9a-f]{6})/i);
+		if(m){
+		  var idx = COVER_GRADS.findIndex(function(g){ return g[0].toLowerCase() === ('#'+m[1]).toLowerCase(); });
+		  if(idx >= 0) bookMeta.cover = { type:'grad', idx: idx };
+		}
+		coverSec.remove();
+	  }
+	  applyImported(title, chapters, bookMeta);
+	  toast('已导入 HTML，共 '+chapters.length+' 章，' + countChars(chapters) + ' 字符');
+	}catch(err){ alert('HTML 导入失败：'+err.message); }
+  };
+  r.onerror = function(){ alert('读取文件失败'); };
+  r.readAsText(file, 'utf-8');
+}
+function importJson(file){
+  var r = new FileReader();
+  r.onload = function(e){
+	try{
+	  var d = JSON.parse(String(e.target.result || '{}'));
+	  var chapters = (d.chapters||[]).map(function(c){ return { id: c.id || uid(), title: c.title || '未命名', html: c.html || '' }; });
+	  applyImported(d.book && d.book.title || '导入的书', chapters, d.book || {});
+	  toast('已导入工程文件，共 '+chapters.length+' 章，' + countChars(chapters) + ' 字符');
+	}catch(err){ alert('工程文件解析失败：'+err.message); }
+  };
+  r.onerror = function(){ alert('读取文件失败'); };
+  r.readAsText(file, 'utf-8');
+}
+
+/* ---------- EPUB 导入 ---------- */
+function importEpub(file){
+  if(typeof DecompressionStream === 'undefined'){
+	alert('当前浏览器不支持解压（DecompressionStream）。\n请使用 Chrome / Edge / Firefox / Safari 16.4+ 再导入 EPUB。');
+	return;
+  }
+  readEpubFile(file);
+}
+function readEpubFile(file){
+  var r = new FileReader();
+  r.onload = function(ev){
+	MiniZip.loadAsync(new Uint8Array(ev.target.result))
+	  .then(function(zip){ return parseEpubZip(zip, file); })
+	  .then(function(result){
+		if(!result || !result.chapters.length){
+		  alert('未在 EPUB 中找到章节内容。\n可能原因：\n1) 文件不是有效的 EPUB\n2) OPF 文件路径不标准\n3) 章节 XHTML 路径解析失败');
+		  return;
+		}
+		applyImported(result.title, result.chapters, result.book);
+		var imgCount = 0;
+		result.chapters.forEach(function(c){ var d = document.createElement('div'); d.innerHTML = c.html || ''; imgCount += d.querySelectorAll('img').length; });
+		var chars = countChars(result.chapters);
+		toast('已导入 EPUB：' + result.chapters.length + ' 章，' + chars + ' 字符' + (imgCount ? '，' + imgCount + ' 张图片' : ''));
+	  })
+	  .catch(function(e){ alert('EPUB 解析失败：' + (e && e.message ? e.message : e)); });
+  };
+  r.onerror = function(){ alert('读取 EPUB 文件失败'); };
+  r.readAsArrayBuffer(file);
+}
+function zipFind(zip, path){
+  if(!path) return null;
+  var decoded = path;
+  try{ decoded = decodeURIComponent(path); }catch(e){}
+  var candidates = [path, decoded, path.replace(/^\.\//,''), decoded.replace(/^\.\//,''), path.replace(/^\/+/,''), decoded.replace(/^\/+/,'')];
+  for(var i=0;i<candidates.length;i++){
+	var f = zip.file(candidates[i]);
+	if(f) return f;
+  }
+  var lower = decoded.toLowerCase();
+  var found = null;
+  zip.forEach(function(relPath, entry){
+	if(found) return;
+	if(relPath.toLowerCase() === lower || relPath.toLowerCase().endsWith('/'+lower)) found = entry;
+  });
+  return found;
+}
+function guessImageMime(pathOrMime){
+  if(!pathOrMime) return 'image/jpeg';
+  if(/^image\//i.test(pathOrMime)) return pathOrMime.toLowerCase();
+  var p = pathOrMime.toLowerCase().split('?')[0].split('#')[0];
+  if(/\.jpe?g$/.test(p)) return 'image/jpeg';
+  if(/\.png$/.test(p)) return 'image/png';
+  if(/\.gif$/.test(p)) return 'image/gif';
+  if(/\.webp$/.test(p)) return 'image/webp';
+  if(/\.svg$/.test(p)) return 'image/svg+xml';
+  if(/\.bmp$/.test(p)) return 'image/bmp';
+  if(/\.ico$/.test(p)) return 'image/x-icon';
+  if(/\.avif$/.test(p)) return 'image/avif';
+  return 'image/jpeg';
+}
+function resolveZipPath(baseDir, href){
+  var decodedHref = href;
+  try{ decodedHref = decodeURIComponent(href); }catch(e){}
+  decodedHref = decodedHref.split('#')[0];
+  var qi = decodedHref.indexOf('?');
+  if(qi >= 0) decodedHref = decodedHref.slice(0, qi);
+  var parts = (baseDir || '').split('/').filter(Boolean);
+  var rel = decodedHref.replace(/^\.\//,'').split('/');
+  for(var i=0;i<rel.length;i++){
+	var seg = rel[i];
+	if(seg === '..'){ parts.pop(); }
+	else if(seg === '.' || seg === ''){ }
+	else parts.push(seg);
+  }
+  return parts.join('/');
+}
+function parseEpubZip(zip, file){
+  return Promise.resolve()
+	.then(function(){
+	  var containerFile = zipFind(zip, 'META-INF/container.xml');
+	  if(!containerFile) throw new Error('缺少 META-INF/container.xml，不是有效的 EPUB');
+	  return containerFile.async('string');
+	})
+	.then(function(xml){
+	  var m = xml.match(/full-path\s*=\s*"([^"]+)"/i);
+	  if(!m) throw new Error('container.xml 中找不到 rootfile full-path');
+	  var opfPath = decodeURIComponent(m[1]);
+	  var base = opfPath.replace(/[^/]+$/,'');
+	  var opfFile = zipFind(zip, opfPath);
+	  if(!opfFile) throw new Error('找不到 OPF 文件：' + opfPath);
+	  return opfFile.async('string').then(function(opf){ return { opf: opf, base: base }; });
+	})
+	.then(function(ctx){
+	  var opf = ctx.opf, base = ctx.base;
+	  var titleM = opf.match(/<dc:title[^>]*>([\s\S]*?)<\/dc:title>/i);
+	  var authorM = opf.match(/<dc:creator[^>]*>([\s\S]*?)<\/dc:creator>/i);
+	  var langM = opf.match(/<dc:language[^>]*>([\s\S]*?)<\/dc:language>/i);
+	  var descM = opf.match(/<dc:description[^>]*>([\s\S]*?)<\/dc:description>/i);
+	  var book = {
+		title: titleM ? titleM[1].trim() : file.name.replace(/\.[^.]+$/,''),
+		author: authorM ? authorM[1].trim() : '佚名',
+		lang: langM ? langM[1].trim() : 'zh-CN',
+		desc: descM ? descM[1].trim() : ''
+	  };
+	  var manifest = {};
+	  var manifestBlock = opf.match(/<manifest[^>]*>([\s\S]*?)<\/manifest>/i);
+	  if(manifestBlock){
+		manifestBlock[1].replace(/<item\b([^>]*?)\/?>/gi, function(_, attrs){
+		  var idM = attrs.match(/\bid\s*=\s*"([^"]+)"/i);
+		  var hrefM = attrs.match(/\bhref\s*=\s*"([^"]+)"/i);
+		  var mediaM = attrs.match(/\bmedia-type\s*=\s*"([^"]+)"/i);
+		  var propsM = attrs.match(/\bproperties\s*=\s*"([^"]+)"/i);
+		  if(idM && hrefM) manifest[idM[1]] = { href: hrefM[1], media: mediaM ? mediaM[1] : '', props: propsM ? propsM[1] : '' };
+		  return '';
+		});
+	  }
+	  var spine = [];
+	  var spineBlock = opf.match(/<spine[^>]*>([\s\S]*?)<\/spine>/i);
+	  if(spineBlock){
+		spineBlock[1].replace(/<itemref\b([^>]*?)\/?>/gi, function(_, attrs){
+		  var idrefM = attrs.match(/\bidref\s*=\s*"([^"]+)"/i);
+		  if(idrefM && manifest[idrefM[1]]) spine.push(manifest[idrefM[1]]);
+		  return '';
+		});
+	  }
+	  if(!spine.length){
+		Object.keys(manifest).forEach(function(k){ var it = manifest[k]; if(/xhtml|html/.test(it.media)) spine.push(it); });
+	  }
+	  return parseNavTitles(zip, base, manifest).then(function(navMap){
+		var readPromises = spine.map(function(item){ return readChapterXhtml(zip, base, item.href, navMap); });
+		return Promise.all(readPromises).then(function(chapters){
+		  var validChapters = chapters.filter(Boolean);
+		  return extractEpubImages(zip, base, validChapters).then(function(chaptersWithImgs){
+			return { title: book.title, chapters: chaptersWithImgs, book: book };
+		  });
+		});
+	  });
+	});
+}
+function extractEpubImages(zip, base, chapters){
+  var tasks = [];
+  chapters.forEach(function(ch){
+	if(!ch || !ch.html) return;
+	var chapterHref = ch._href || '';
+	var chapterDir = chapterHref ? chapterHref.replace(/[^/]+$/, '') : '';
+	var fullDir = (base + chapterDir).replace(/^\/+/,'');
+	var div = document.createElement('div');
+	div.innerHTML = ch.html;
+	var imgs = div.querySelectorAll('img');
+	var changed = false;
+	imgs.forEach(function(img){
+	  var src = img.getAttribute('src') || '';
+	  if(!src) return;
+	  if(/^data:/i.test(src)) return;
+	  if(/^https?:\/\//i.test(src)) return;
+	  if(/^\/\//.test(src)) return;
+	  var target = resolveZipPath(fullDir, src);
+	  var file = zipFind(zip, target);
+	  if(!file) return;
+	  changed = true;
+	  var mime = guessImageMime(target);
+	  tasks.push(file.async('base64').then(function(b64){
+		img.setAttribute('src', 'data:' + mime + ';base64,' + b64);
+	  }).catch(function(){}));
+	});
+	ch._div = div;
+	ch._changed = changed;
+  });
+  return Promise.all(tasks).then(function(){
+	return chapters.map(function(ch){
+	  if(!ch) return ch;
+	  if(ch._changed && ch._div) ch.html = ch._div.innerHTML;
+	  delete ch._div; delete ch._changed; delete ch._href;
+	  return ch;
+	});
+  });
+}
+function parseNavTitles(zip, base, manifest){
+  var navMap = {};
+  var navItem = null;
+  Object.keys(manifest).forEach(function(k){ if(/nav/.test(manifest[k].props)) navItem = manifest[k]; });
+  var candidatePaths = [];
+  if(navItem) candidatePaths.push((base + navItem.href).replace(/^\/+/,''));
+  candidatePaths.push((base + 'nav.xhtml').replace(/^\/+/,''));
+  candidatePaths.push((base + 'toc.xhtml').replace(/^\/+/,''));
+  candidatePaths.push((base + 'toc.ncx').replace(/^\/+/,''));
+  Object.keys(manifest).forEach(function(k){ var m = manifest[k]; if(/x-dtbncx/.test(m.media)) candidatePaths.push((base + m.href).replace(/^\/+/,'')); });
+  var navFile = null;
+  for(var i=0;i<candidatePaths.length;i++){ var f = zipFind(zip, candidatePaths[i]); if(f){ navFile = f; break; } }
+  if(!navFile) return Promise.resolve(navMap);
+  return navFile.async('string').then(function(txt){
+	txt.replace(/<a\b[^>]*href\s*=\s*"([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, function(_, h, t){
+	  var key = decodeURIComponent(h.split('#')[0].replace(/^\.\//,''));
+	  var val = t.replace(/<[^>]+>/g,'').trim();
+	  if(key && val) navMap[key] = val;
+	  return '';
+	});
+	txt.replace(/<navPoint\b[\s\S]*?<text>([\s\S]*?)<\/text>[\s\S]*?<content\b[^>]*src\s*=\s*"([^"]+)"/gi, function(_, t, s){
+	  var key = decodeURIComponent(s.split('#')[0].replace(/^\.\//,''));
+	  var val = t.replace(/<[^>]+>/g,'').trim();
+	  if(key && val) navMap[key] = val;
+	  return '';
+	});
+	return navMap;
+  }).catch(function(){ return navMap; });
+}
+function readChapterXhtml(zip, base, href, navMap){
+  var cleanHref = decodeURIComponent(href.split('#')[0].replace(/^\.\//,''));
+  var full = (base + cleanHref).replace(/^\/+/,'');
+  var f = zipFind(zip, full);
+  if(!f) return Promise.resolve(null);
+  return f.async('string').then(function(html){
+	var parser = new DOMParser();
+	var doc = parser.parseFromString(html, 'text/html');
+	var body = doc.body;
+	if(!body) return null;
+	var bad = body.querySelectorAll('script,style');
+	for(var i=bad.length-1;i>=0;i--) bad[i].parentNode.removeChild(bad[i]);
+	var h1 = body.querySelector('h1, h2');
+	var titleFromNav = navMap[cleanHref] || navMap[href] || '';
+	var titleFromH = h1 ? h1.textContent.trim() : '';
+	var title = titleFromNav || titleFromH || cleanHref.replace(/\.(x?html?)$/i,'');
+	return { id: uid(), title: title, html: body.innerHTML, _href: cleanHref };
+  }).catch(function(){ return null; });
+}
+
+/* ---------- 同步/初始化 ---------- */
+function syncAll(){
+  $('#bookTitle').value = state.book.title;
+  $('#bookAuthor').value = state.book.author || '';
+  $('#bookLang').value = state.book.lang || 'zh-CN';
+  document.title = state.book.title + ' · 电子书编辑器';
+  if(!state.chapters.length){
+	state.chapters.push({ id:uid(), title:'第一章', html:'' });
+	state.activeId = state.chapters[0].id;
+  }
+  if(!state.activeId || !state.chapters.some(function(c){return c.id===state.activeId;})) state.activeId = state.chapters[0].id;
+  switchToChapter(state.activeId, true);
+  scheduleSave();
+}
+function bindDrag(){
+  var hint = $('#dropHint'), counter = 0;
+  window.addEventListener('dragenter', function(e){ if(hasFile(e)){ e.preventDefault(); counter++; hint.classList.add('show'); } });
+  window.addEventListener('dragover', function(e){ if(hasFile(e)) e.preventDefault(); });
+  window.addEventListener('dragleave', function(){ counter = Math.max(0,counter-1); if(!counter) hint.classList.remove('show'); });
+  window.addEventListener('drop', function(e){
+	if(!hasFile(e)) return;
+	e.preventDefault(); counter=0; hint.classList.remove('show');
+	var f = e.dataTransfer.files[0]; if(f) handleImport(f);
+  });
+  function hasFile(e){ return e.dataTransfer && e.dataTransfer.types && Array.prototype.indexOf.call(e.dataTransfer.types,'Files')>=0; }
+}
+function init(){
+  var saved = null;
+  try{ saved = localStorage.getItem(STORE_KEY); }catch(e){}
+  bindTop(); bindToolbar(); bindConfirm(); addEditorListeners(); bindDrag();
+  if(saved){
+	try{
+	  var d = JSON.parse(saved);
+	  state.book = Object.assign(state.book, d.book||{});
+	  state.chapters = (d.chapters||[]).map(function(c){ return { id:c.id||uid(), title:c.title||'未命名', html:c.html||'' }; });
+	  state.activeId = d.activeId || null;
+	}catch(e){ state.chapters = []; }
+  }
+  if(!state.chapters.length){
+	state.chapters.push({
+	  id: uid(), title: '第一章',
+	  html: '<h1 style="text-align:center">第一章</h1><p><br></p><p>从这里开始写你的故事……</p>'
+	});
+  }
+  if(!state.activeId || !state.chapters.some(function(c){return c.id===state.activeId;})) state.activeId = state.chapters[0].id;
+  syncAll();
+  $('#saveText').textContent = '已保存到本地';
+  var resizeTimer = null;
+  window.addEventListener('resize', function(){ clearTimeout(resizeTimer); resizeTimer = setTimeout(function(){ refreshViews(); }, 200); });
+  window.addEventListener('beforeunload', function(){
+	try{
+	  flushEditor();
+	  var data = JSON.stringify({
+		book: state.book,
+		chapters: state.chapters.map(function(c){ return { id:c.id, title:c.title, html:c.html }; }),
+		activeId: state.activeId
+	  });
+	  if(data.length < 4 * 1024 * 1024) localStorage.setItem(STORE_KEY, data);
+	}catch(e){}
+  });
+  initPWA();
+  initBatchImage();
+  initBookmark();
+}
+
+/* ============================================================
+   批量插图
+   ============================================================ */
+function initBatchImage(){
+  var btn = document.getElementById('btnBatchImage');
+  if(!btn) return;
+  btn.addEventListener('click', function(){
+    var inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true;
+    inp.onchange = function(){
+      var files = inp.files;
+      if(!files || !files.length) return;
+      if(files.length > 100 && !confirm('共选择 ' + files.length + ' 张，建议一次不超过 100 张。继续？')) return;
+      insertManyImages(files);
+    };
+    inp.click();
+  });
+}
+function compressImage(file){
+  return new Promise(function(resolve){
+    var fr = new FileReader();
+    fr.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var MAX_PIXEL = 1600, QUALITY = 0.82;
+        var w = img.width, h = img.height;
+        var scale = Math.min(1, MAX_PIXEL / Math.max(w, h));
+        var tw = Math.round(w * scale), th = Math.round(h * scale);
+        try{
+          var canvas = document.createElement('canvas');
+          canvas.width = tw; canvas.height = th;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, tw, th);
+          var mime = (file.type === 'image/png') ? 'image/png' : 'image/jpeg';
+          var dataUrl = canvas.toDataURL(mime, QUALITY);
+          resolve({ ok:true, dataUrl:dataUrl, name:file.name });
+        }catch(err){ resolve({ ok:true, dataUrl:e.target.result, name:file.name }); }
+      };
+      img.onerror = function(){ resolve({ ok:false, name:file.name }); };
+      img.src = e.target.result;
+    };
+    fr.onerror = function(){ resolve({ ok:false, name:file.name }); };
+    fr.readAsDataURL(file);
+  });
+}
+function insertManyImages(files){
+  files = Array.prototype.slice.call(files);
+  var total = files.length;
+  var ed = document.getElementById('editor');
+  if(!ed){ toast('编辑器未就绪'); return; }
+
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(20,26,40,.55);z-index:400;display:grid;place-items:center;backdrop-filter:blur(3px)';
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:14px;padding:24px 28px;min-width:260px;max-width:calc(100vw - 40px);text-align:center;box-shadow:0 20px 60px rgba(20,26,40,.3)">'
+    + '<div style="font-weight:700;font-size:15px;margin-bottom:10px">正在插入图片 <span id="_bi_done" style="color:#2f6fed">0</span> / ' + total + '</div>'
+    + '<div style="height:8px;background:#eef1f5;border-radius:8px;overflow:hidden;margin-bottom:10px">'
+    +   '<div id="_bi_bar" style="height:100%;width:0%;background:linear-gradient(90deg,#4a7dff,#2f6fed);transition:width .2s"></div>'
+    + '</div>'
+    + '<div style="font-size:12px;color:#6b7280" id="_bi_name">准备中…</div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+  var bar = overlay.querySelector('#_bi_bar');
+  var doneEl = overlay.querySelector('#_bi_done');
+  var nameEl = overlay.querySelector('#_bi_name');
+
+  var i = 0, failed = 0;
+  function next(){
+    if(i >= total){
+      setTimeout(function(){
+        overlay.remove();
+        toast('已插入 ' + (total - failed) + ' 张图片' + (failed ? ('，' + failed + ' 张失败') : ''));
+        try{ ed.dispatchEvent(new Event('input', { bubbles: true })); }catch(e){}
+        try{
+          ed.focus();
+          var range = document.createRange();
+          range.selectNodeContents(ed); range.collapse(false);
+          var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+          var sc = document.getElementById('editorScroll');
+          if(sc) sc.scrollTop = sc.scrollHeight;
+        }catch(e){}
+      }, 200);
+      return;
+    }
+    var f = files[i];
+    nameEl.textContent = '正在处理：' + f.name;
+    compressImage(f).then(function(res){
+      if(res.ok){
+        var html = '<p><img src="' + res.dataUrl + '" alt="' + esc(res.name) + '" style="max-width:100%"></p>';
+        try{ ed.focus(); document.execCommand('insertHTML', false, html); }
+        catch(e){
+          var range = document.createRange();
+          range.selectNodeContents(ed); range.collapse(false);
+          var frag = range.createContextualFragment(html);
+          range.insertNode(frag);
+        }
+      } else { failed++; }
+      i++;
+      doneEl.textContent = String(i);
+      bar.style.width = Math.round(i / total * 100) + '%';
+      requestAnimationFrame(function(){ setTimeout(next, 10); });
+    });
+  }
+  next();
+}
+
+/* ============================================================
+   书签
+   ============================================================ */
+var BM_KEY = 'ebook_editor_bookmarks_v1';
+function readBookmarks(){ try{ var r = localStorage.getItem(BM_KEY); return r ? JSON.parse(r) : []; }catch(e){ return []; } }
+function writeBookmarks(list){ try{ localStorage.setItem(BM_KEY, JSON.stringify(list)); return true; }catch(e){ return false; } }
+function bmId(){ return 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function textAround(editorEl){
+  try{
+    var sel = window.getSelection();
+    if(!sel || !sel.rangeCount) return { pre:'', post:'', snippet:'' };
+    var node = sel.getRangeAt(0).startContainer;
+    var off = sel.getRangeAt(0).startOffset;
+    var r0 = document.createRange();
+    r0.selectNodeContents(editorEl);
+    r0.setEnd(node, off);
+    var idx = r0.toString().length;
+    var fullText = editorEl.textContent || '';
+    var pre = fullText.slice(Math.max(0, idx - 30), idx);
+    var post = fullText.slice(idx, idx + 30);
+    return { pre: pre, post: post, snippet: (pre + '|' + post).trim() };
+  }catch(e){ return { pre:'', post:'', snippet:'' }; }
+}
+
+function insertAnchor(id){
+  var ed = document.getElementById('editor'); if(!ed) return null;
+  ed.focus();
+  try{
+    document.execCommand('insertHTML', false,
+      '<span data-bm="' + id + '" class="bm-anchor"></span>');
+  }catch(e){
+    var range = document.createRange();
+    range.selectNodeContents(ed); range.collapse(false);
+    var span = document.createElement('span');
+    span.setAttribute('data-bm', id); span.className = 'bm-anchor';
+    range.insertNode(span);
+  }
+  return ed;
+}
+
+function addBookmark(name){
+  flushEditor();
+  try{ scheduleSave(); }catch(e){}
+  var activeChapter = getActive();
+  if(!activeChapter){ toast('请先选中章节'); return; }
+  var id = bmId();
+  var ed = insertAnchor(id);
+  if(!ed){ toast('插入书签锚点失败'); return; }
+  var info = textAround(ed);
+  var list = readBookmarks();
+  list.push({
+    id: id,
+    name: name || (info.pre.slice(-10) + info.post.slice(0,10) || ('书签 ' + (list.length + 1))),
+    chapterId: activeChapter.id,
+    chapterTitle: activeChapter.title || '未命名',
+    snippet: info.snippet,
+    createdAt: Date.now()
+  });
+  writeBookmarks(list);
+  try{ ed.dispatchEvent(new Event('input', { bubbles: true })); }catch(e){}
+  toast('已添加书签：' + (name || '新书签'));
+}
+
+function removeBookmark(id){
+  var list = readBookmarks().filter(function(b){ return b.id !== id; });
+  writeBookmarks(list);
+  var changed = false;
+  state.chapters.forEach(function(c){
+    if(c.html && c.html.indexOf('data-bm="' + id + '"') >= 0){
+      c.html = c.html.replace(new RegExp('<span[^>]*data-bm="' + id + '"[^>]*>\\s*</span>', 'g'), '');
+      changed = true;
+    }
+  });
+  if(changed){
+    var ed = document.getElementById('editor');
+    var cur = getActive();
+    if(ed && cur) ed.innerHTML = cur.html;
+    scheduleSave();
+  }
+  toast('已删除书签');
+}
+
+function jumpToBookmark(b){
+  if(state.activeId !== b.chapterId){
+    var tab = document.querySelector('#tabbar .tab[data-id="' + b.chapterId + '"]');
+    if(tab) tab.click();
+    else {
+      var row = document.querySelector('#chapterList .chapter[data-id="' + b.chapterId + '"]');
+      if(row) row.click();
+    }
+  }
+  setTimeout(function(){
+    var ed = document.getElementById('editor'); if(!ed) return;
+    var span = ed.querySelector('[data-bm="' + b.id + '"]');
+    if(span){
+      span.scrollIntoView({ behavior:'smooth', block:'center' });
+      var range = document.createRange();
+      range.setStartBefore(span); range.collapse(true);
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+      ed.focus();
+      toast('已定位到书签：' + b.name);
+      return;
+    }
+    toast('书签所在位置已变化，请重新添加');
+  }, 260);
+}
+
+function openBookmarksPanel(){
+  var old = document.getElementById('bmModal');
+  if(old) old.remove();
+  var list = readBookmarks();
+  var rows = list.map(function(b, i){
+    return '<div class="bm-row" data-id="' + b.id + '" style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#fbfcfe;margin-bottom:6px">'
+      + '<div style="width:22px;height:22px;border-radius:5px;background:#eef1f5;color:#6b7280;font-size:11px;display:grid;place-items:center;font-weight:700;flex-shrink:0">' + (i+1) + '</div>'
+      + '<div style="flex:1;min-width:0">'
+      +   '<div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(b.name) + '</div>'
+      +   '<div style="font-size:11px;color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">'
+      +     esc(b.chapterTitle) + ' · ' + esc((b.snippet || '').slice(0, 40))
+      +   '</div>'
+      + '</div>'
+      + '<button class="btn" data-jump="' + b.id + '" style="height:30px;padding:0 10px;font-size:12px;flex-shrink:0">跳转</button>'
+      + '<button class="btn" data-del="' + b.id + '" style="height:30px;padding:0 10px;font-size:12px;flex-shrink:0;color:var(--danger)">删除</button>'
+      + '</div>';
+  }).join('');
+  var modal = document.createElement('div');
+  modal.id = 'bmModal';
+  modal.className = 'modal-mask show';
+  modal.innerHTML =
+    '<div class="modal" style="width:min(480px,calc(100vw - 28px))">'
+    + '<div class="modal-h">'
+    +   '<span>书签（<span>' + list.length + '</span> 个）</span>'
+    +   '<div class="mh-actions"><button class="mh-btn" data-close="bmModal">✕</button></div>'
+    + '</div>'
+    + '<div class="modal-b">'
+    +   '<div class="field">'
+    +     '<label>为当前位置添加书签</label>'
+    +     '<div style="display:flex;gap:8px">'
+    +       '<input id="_bm_name" placeholder="书签名称（可不填）" style="flex:1;border:1px solid var(--line);border-radius:8px;padding:10px 12px;outline:none;background:#fbfcfe;font-size:14px;font-family:inherit;color:inherit;min-width:0">'
+    +       '<button class="btn primary" id="_bm_add" style="padding:0 16px;font-weight:600;white-space:nowrap">添加</button>'
+    +     '</div>'
+    +   '</div>'
+    +   '<div class="field">'
+    +     '<label>全部书签（点击"跳转"定位）</label>'
+    +     '<div id="_bm_list" style="max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch">'
+    +       (list.length ? rows : '<div style="padding:24px;text-align:center;color:var(--sub);font-size:13px;line-height:1.7">还没有书签<br>把光标放到要标记的位置，点上方"添加"<br>或按 Ctrl/⌘ + B 一键添加</div>')
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="modal-f"><button class="btn" data-close="bmModal">关闭</button></div>'
+    + '</div>';
+  document.body.appendChild(modal);
+  modal.querySelectorAll('[data-close]').forEach(function(b){ b.onclick = function(){ modal.remove(); }; });
+  modal.onclick = function(ev){ if(ev.target === modal) modal.remove(); };
+  var addBtn = modal.querySelector('#_bm_add');
+  var nameInput = modal.querySelector('#_bm_name');
+  addBtn.onclick = function(){
+    addBookmark((nameInput.value || '').trim());
+    modal.remove();
+    setTimeout(openBookmarksPanel, 200);
+  };
+  nameInput.addEventListener('keydown', function(ev){
+    if(ev.key === 'Enter'){ ev.preventDefault(); addBtn.click(); }
+  });
+  modal.querySelectorAll('[data-jump]').forEach(function(btn){
+    btn.onclick = function(){
+      var id = btn.getAttribute('data-jump');
+      var b = readBookmarks().find(function(x){ return x.id === id; });
+      if(!b) return;
+      modal.remove();
+      jumpToBookmark(b);
+    };
+  });
+  modal.querySelectorAll('[data-del]').forEach(function(btn){
+    btn.onclick = function(){
+      var id = btn.getAttribute('data-del');
+      if(!confirm('删除这个书签？')) return;
+      removeBookmark(id);
+      modal.remove();
+      setTimeout(openBookmarksPanel, 150);
+    };
+  });
+}
+
+function initBookmark(){
+  var btn = document.getElementById('btnBookmark');
+  if(btn) btn.onclick = openBookmarksPanel;
+  document.addEventListener('keydown', function(ev){
+    if(!(ev.ctrlKey || ev.metaKey) || ev.key.toLowerCase() !== 'b') return;
+    var ed = document.getElementById('editor');
+    if(!ed) return;
+    if(document.activeElement !== ed && !ed.contains(document.activeElement)) return;
+    ev.preventDefault();
+    addBookmark('');
+  });
+}
+
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+})();
+</script>
+</body>
+      </html>
